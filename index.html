@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validador de Tickets para Entregable - MINEDU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --mn-red:#C8102E;
+    --mn-red-dark:#8E0B21;
+    --mn-ink:#26221E;
+    --mn-muted:#6B6459;
+    --mn-bg:#F6F4F0;
+    --mn-line:#E3DFD5;
+  }
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--mn-bg);
+    color:var(--mn-ink);
+  }
+  .mn-header{
+    background:#fff;
+    border-bottom:4px solid var(--mn-red);
+    padding:20px 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .mn-eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--mn-red);
+    font-weight:600;
+    margin:0 0 2px;
+  }
+  .mn-title{
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    font-size:clamp(20px,3vw,30px);
+    margin:0;
+    color:var(--mn-ink);
+  }
+  .mn-logo{ height:56px; object-fit:contain; }
+  .mn-container{ max-width:1200px; margin:0 auto; padding:32px 20px 60px; }
+
+  .mn-card{
+    background:#fff;
+    border:1px solid var(--mn-line);
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:24px;
+  }
+  .mn-drop{
+    border:2px dashed var(--mn-line);
+    border-radius:12px;
+    padding:40px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .mn-drop:hover, .mn-drop.over{ border-color:var(--mn-red); background:#FBF3F4; }
+  .mn-drop i{ font-size:32px; color:var(--mn-red); }
+  .mn-drop p{ margin:10px 0 0; color:var(--mn-muted); font-size:14px; }
+
+  .mn-validation{ display:flex; align-items:center; gap:10px; margin-top:16px; font-weight:600; font-size:15px; }
+  .mn-validation.ok{ color:#1E7B45; }
+  .mn-validation.err{ color:var(--mn-red); }
+  .mn-validation i{ font-size:22px; }
+  .mn-missing{ font-size:13px; color:var(--mn-muted); margin:4px 0 0 32px; }
+
+  .btn-mn{ background:var(--mn-red); border-color:var(--mn-red); color:#fff; font-weight:600; }
+  .btn-mn:hover{ background:var(--mn-red-dark); border-color:var(--mn-red-dark); color:#fff; }
+
+  .nav-tabs .nav-link{ color:var(--mn-muted); font-weight:600; font-size:14px; }
+  .nav-tabs .nav-link.active{ color:var(--mn-red); border-color:var(--mn-line) var(--mn-line) #fff; border-top:3px solid var(--mn-red); }
+
+  .mn-table-title{
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:16px;
+    background:#156082; color:#fff; padding:10px 14px; border-radius:8px; margin:28px 0 16px;
+  }
+  table.mn-table{ width:100%; border-collapse:collapse; margin-bottom:28px; }
+  table.mn-table th, table.mn-table td{
+    border:1px solid var(--mn-line); padding:9px 12px; font-size:14px; text-align:center;
+  }
+  table.mn-table thead th{ background:#FBF3F4; color:var(--mn-red-dark); }
+  table.mn-table tr:last-child td{ font-weight:700; background:#FAF8F4; }
+
+  .mn-file-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mn-muted); margin-bottom:6px; }
+  .mn-file-row button{ margin-left:auto; background:none; border:none; color:var(--mn-muted); font-size:13px; cursor:pointer; }
+  .mn-file-row button:hover{ color:var(--mn-red); }
+
+  .form-select.mn-select:focus{ border-color:var(--mn-red); box-shadow:0 0 0 .2rem rgba(200,16,46,.15); }
+  #chartCard{ max-width:1150px; margin:0 auto; }
+  #chartCard canvas{ max-height:1000px; }
+  .mn-chart-box{ margin-bottom:56px; border-radius:20px; overflow:hidden; }
+  .mn-chart-tiempo-box{ border-radius:32px; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .mn-chart-box canvas{ display:block; width:100%; height:auto; }
+  .mn-chart-row{ display:flex; gap:32px; flex-wrap:wrap; }
+  .mn-chart-row .mn-chart-half{ flex:1 1 320px; margin-bottom:48px; }
+  .mn-chart-centered{ max-width:420px; margin-left:auto; margin-right:auto; }
+
+  /* tabla estilo imagen de referencia: header #156082, filas alternadas blanco/celeste */
+  .mn-img-table-wrap{ overflow-x:auto; border:1px solid #A9D4E8; border-radius:4px; }
+  table.mn-img-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.mn-img-table th{
+    background:#156082; color:#fff; font-weight:700; text-align:left;
+    padding:8px 12px; border:1px solid #A9D4E8;
+  }
+  table.mn-img-table th.mn-num-col, table.mn-img-table td.mn-num-col{ text-align:right; }
+  table.mn-img-table td{ padding:6px 12px; border:1px solid #A9D4E8; color:#1a1a1a; }
+  table.mn-img-table tr:nth-child(odd) td{ background:#C0E6F5; }
+  table.mn-img-table tr:nth-child(even) td{ background:#FFFFFF; }
+  #tab100 table.mn-img-table tr:last-child td,
+  #tabPct table.mn-img-table tr:last-child td{ font-weight:700; }
+
+  .mn-anexo-box{ border:1px solid var(--mn-line); border-radius:10px; padding:20px; }
+  .mn-compact-wrap{ max-width:620px; margin:0 auto; }
+  .mn-compact-wrap .mn-table-title{ font-size:12px; padding:6px 10px; }
+  .mn-compact-wrap table.mn-table th, .mn-compact-wrap table.mn-table td{
+    padding:4px 8px; font-size:11.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="mn-header">
+  <div>
+    <p class="mn-eyebrow">Muestreo y validación de tickets</p>
+    <h1 class="mn-title">VALIDADOR DE TICKETS PARA ENTREGABLE</h1>
+  </div>
+  <img class="mn-logo" alt="Logo Ministerio de Educación del Perú"
+       src="https://vectorseek.com/wp-content/uploads/2023/09/Ministerio-De-Educacion-Del-Peru.-Logo-Vector.svg-.png">
+</div>
+
+<div class="mn-container">
+
+  <!-- Carga de archivo -->
+  <div class="mn-card">
+    <div id="fileRow" class="mn-file-row" style="display:none;">
+      <i class="bi bi-file-earmark-spreadsheet"></i>
+      <span id="fileRowText"></span>
+      <button id="btnChangeFile"><i class="bi bi-x-lg"></i> cambiar archivo</button>
+    </div>
+
+    <div id="dropZone" class="mn-drop">
+      <i class="bi bi-cloud-arrow-up"></i>
+      <p><strong>Arrastra tu archivo Excel aquí</strong> o haz clic para subirlo</p>
+      <p style="font-size:12px;">Formatos válidos: .xlsx, .xls</p>
+      <input id="excelInput" type="file" accept=".xlsx,.xls" style="display:none;">
+    </div>
+
+    <div id="validationBox"></div>
+
+    <!-- Controles: aparecen solo tras validar -->
+    <div id="generateControls" style="display:none; margin-top:20px;">
+      <div class="row g-2 align-items-end">
+        <div class="col-sm-5">
+          <label class="form-label small text-muted mb-1">Porcentaje de validación</label>
+          <select id="percentSelect" class="form-select mn-select"></select>
+        </div>
+        <div class="col-sm-7">
+          <button id="btnGenerate" class="btn btn-mn w-100 py-2">
+            <i class="bi bi-bar-chart-line-fill"></i> GENERAR CUADROS Y GRÁFICOS
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div id="resultsSection" style="display:none;">
+    <ul class="nav nav-tabs" id="mnTabs">
+      <li class="nav-item"><button class="nav-link active" data-tab="tab100">Cuadros al 100%</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="tabPct">Cuadros al % asignado</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="tabPareto">Pareto</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="tabGraficos100">Gráficos al 100%</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="tabTablasPct">Tablas y Gráficos de %</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="tabAnexos">Anexos</button></li>
+    </ul>
+
+    <div class="mn-card" style="border-top:none; border-radius:0 0 14px 14px;">
+      <div id="tab100" class="mn-tabpane"></div>
+      <div id="tabPct" class="mn-tabpane" style="display:none;"></div>
+      <div id="tabPareto" class="mn-tabpane" style="display:none;">
+        <div id="chartCard">
+          <canvas id="paretoChart"></canvas>
+        </div>
+        <div id="paretoTableWrap" style="margin-top:20px;"></div>
+      </div>
+      <div id="tabGraficos100" class="mn-tabpane" style="display:none;">
+        <div class="mn-chart-row">
+          <div class="mn-chart-box mn-chart-half"><canvas id="chartEstado" width="380" height="320"></canvas></div>
+          <div class="mn-chart-box mn-chart-half"><canvas id="chartTipo" width="380" height="320"></canvas></div>
+        </div>
+        <div class="mn-chart-box"><canvas id="chartCategoria" width="760" height="480"></canvas></div>
+        <div class="mn-chart-box mn-chart-tiempo-box"><canvas id="chartTiempo" width="760" height="500"></canvas></div>
+      </div>
+      <div id="tabTablasPct" class="mn-tabpane" style="display:none;">
+        <p id="pctGuardadoNote" class="text-muted small mb-3"></p>
+
+        <div class="mn-chart-box mn-chart-centered"><canvas id="chartTipoPct" width="380" height="320"></canvas></div>
+
+        <p class="mn-table-title">CATEGORÍA Y SOLICITUDES</p>
+        <div id="tablaSolicitudesWrap" class="mn-img-table-wrap"></div>
+        <div class="mn-chart-box" style="margin-top:20px;"><canvas id="chartSolicitudesCat" width="900"></canvas></div>
+
+        <p class="mn-table-title" style="margin-top:32px;">CATEGORÍA E INCIDENTES</p>
+        <div id="tablaIncidentesWrap" class="mn-img-table-wrap"></div>
+        <div class="mn-chart-box" style="margin-top:20px;"><canvas id="chartIncidentesCat" width="900"></canvas></div>
+      </div>
+      <div id="tabAnexos" class="mn-tabpane" style="display:none;">
+        <div class="mn-anexo-box">
+          <p class="mn-table-title" style="border-radius:8px;">DESCARGA ANEXO AL 100%</p>
+          <p class="text-muted small mt-2 mb-3">Incluye el 100% de los tickets del Excel cargado.</p>
+          <button id="btnAnexo100" class="btn btn-mn"><i class="bi bi-file-earmark-excel"></i> Descargar Excel</button>
+        </div>
+
+        <div class="mn-anexo-box" style="margin-top:28px;">
+          <p class="mn-table-title" style="border-radius:8px;">DESCARGA ANEXO AL % ELEGIDO</p>
+          <p id="anexoPctNote" class="text-muted small mt-2 mb-3"></p>
+          <button id="btnAnexoPct" class="btn btn-mn"><i class="bi bi-file-earmark-excel"></i> Descargar Excel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+
+<script>
+const REQUIRED_COLUMNS = ["Título","Estado","Categoría","Tipo","Estadísticas - Hora de resolución","ID","Asignado a - Técnico","Tiempo para resolver excedido"];
+
+let excelRows = [];
+let excelColumns = [];
+let paretoChartInstance = null;
+let chartInstances = { estado:null, tipo:null, categoria:null, tiempo:null };
+
+// plugin genérico para pintar el fondo del canvas (Chart.js no lo trae por defecto)
+const customCanvasBackgroundColor = {
+  id: 'customCanvasBackgroundColor',
+  beforeDraw: (chart, args, opts) => {
+    const { ctx, width, height } = chart;
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-over';
+    ctx.fillStyle = opts.color || '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+};
+Chart.register(customCanvasBackgroundColor);
+if (window.ChartDataLabels) Chart.register(ChartDataLabels);
+
+const dropZone = document.getElementById('dropZone');
+const excelInput = document.getElementById('excelInput');
+const validationBox = document.getElementById('validationBox');
+const fileRow = document.getElementById('fileRow');
+const fileRowText = document.getElementById('fileRowText');
+const generateControls = document.getElementById('generateControls');
+const percentSelect = document.getElementById('percentSelect');
+const resultsSection = document.getElementById('resultsSection');
+
+// poblar el select de porcentajes: 5% a 100%, de 5 en 5
+for(let p=5; p<=100; p+=5){
+  const opt = document.createElement('option');
+  opt.value = p; opt.textContent = p + '%';
+  if(p === 100) opt.selected = true;
+  percentSelect.appendChild(opt);
+}
+
+dropZone.addEventListener('click', () => excelInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+excelInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+document.getElementById('btnChangeFile').addEventListener('click', resetAll);
+
+function resetAll(){
+  excelRows = []; excelColumns = [];
+  fileRow.style.display = 'none';
+  dropZone.style.display = 'block';
+  validationBox.innerHTML = '';
+  generateControls.style.display = 'none';
+  resultsSection.style.display = 'none';
+  excelInput.value = '';
+}
+
+function handleFile(file){
+  validationBox.innerHTML = '';
+  generateControls.style.display = 'none';
+  resultsSection.style.display = 'none';
+
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+  if(!isExcel){
+    showValidation(false, 'Este no es un archivo Excel');
+    dropZone.style.display = 'block';
+    fileRow.style.display = 'none';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet, {defval:''});
+      if(!json.length){
+        showValidation(false, 'El archivo Excel no contiene filas de datos');
+        return;
+      }
+      const cols = Object.keys(json[0]).map(c => c.trim());
+      const missing = REQUIRED_COLUMNS.filter(rc => !cols.includes(rc));
+
+      if(missing.length){
+        showValidation(false, 'El archivo no contiene las columnas requeridas', missing);
+        return;
+      }
+
+      excelRows = json;
+      excelColumns = cols;
+      showValidation(true, 'Archivo validado');
+
+      fileRow.style.display = 'flex';
+      fileRowText.textContent = `${file.name} · ${json.length} filas`;
+      dropZone.style.display = 'none';
+      generateControls.style.display = 'block';
+
+    }catch(err){
+      showValidation(false, 'No se pudo leer el archivo. Verifica que sea un Excel válido');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showValidation(ok, message, missing){
+  if(ok){
+    validationBox.innerHTML = `
+      <div class="mn-validation ok">
+        <i class="bi bi-check-circle-fill"></i> ${message}
+      </div>`;
+  } else {
+    let missingHtml = '';
+    if(missing && missing.length){
+      missingHtml = `<div class="mn-missing">Faltan: ${missing.join(', ')}</div>`;
+    }
+    validationBox.innerHTML = `
+      <div class="mn-validation err">
+        <i class="bi bi-x-circle-fill"></i> ${message}
+      </div>${missingHtml}`;
+  }
+}
+
+// ---------- Lógica de negocio ----------
+
+function stripAccents(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function normalizeTipo(v){ return stripAccents(String(v||'').trim().toLowerCase()); }
+
+// clasifica una fila según su columna "Tipo": 'incidencia' | 'solicitud' | null (no identificado)
+function classifyTipo(v){
+  const t = normalizeTipo(v);
+  if(t.startsWith('incidente')) return 'incidencia';
+  if(t.startsWith('solicitud')) return 'solicitud';
+  return null;
+}
+
+// primero identifica cada fila (incidencia / solicitud / no identificada);
+// el TOTAL solo suma lo que sí fue identificado en alguna de las dos categorías.
+function getTipoCounts(rows){
+  let inc = 0, sol = 0, noIdentificado = 0;
+  rows.forEach(r => {
+    const tipo = classifyTipo(r['Tipo']);
+    if(tipo === 'incidencia') inc++;
+    else if(tipo === 'solicitud') sol++;
+    else noIdentificado++;
+  });
+  return { incidencias: inc, solicitudes: sol, total: inc + sol, noIdentificado };
+}
+
+function noIdentificadoNote(c){
+  if(!c.noIdentificado) return '';
+  return `<p class="text-muted small mb-2"><i class="bi bi-exclamation-triangle"></i> ${c.noIdentificado} fila(s) de la columna "Tipo" no se pudieron identificar como Incidencia o Solicitud y no se incluyen en el TOTAL.</p>`;
+}
+
+// ---------- Filtro global por "Tiempo para resolver excedido" ----------
+// dondequiera que se use el % elegido: primero se filtra a solo "No", y el % se aplica
+// sobre ese total; las celdas con "Sí" quedan excluidas y se reportan aparte.
+function normalizeExcedido(v){ return stripAccents(String(v||'').trim().toLowerCase()); }
+
+function soloNoExcedido(rows){
+  return rows.filter(r => normalizeExcedido(r['Tiempo para resolver excedido']) === 'no');
+}
+function contarExcedidosSi(rows){
+  return rows.filter(r => normalizeExcedido(r['Tiempo para resolver excedido']) === 'si').length;
+}
+
+// shuffle determinista (mulberry32) para que la muestra sea estable
+function mulberry32(seed){
+  return function(){
+    let t = (seed += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seededSample(rows, size, seed=42){
+  const rand = mulberry32(seed);
+  const arr = rows.slice();
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, size);
+}
+
+function pct(n, d){ return d ? ((n/d)*100).toFixed(1) : '0.0'; }
+
+// base compartida por las pestañas 2, 5 y el Anexo al %:
+// total de tickets -> se restan los "Sí" (fuera de tiempo) -> RECIÉN AHÍ se aplica el %.
+function getSeleccionPorPorcentaje(pct){
+  const totalGeneral = excelRows.length;
+  const noExcedidoRows = soloNoExcedido(excelRows);
+  const siCount = totalGeneral - noExcedidoRows.length;
+  const sampleSize = Math.round(noExcedidoRows.length * pct / 100);
+  const sample = seededSample(noExcedidoRows, sampleSize, 42);
+  return { totalGeneral, noExcedidoRows, siCount, sampleSize, sample };
+}
+
+function renderTab100(){
+  const c = getTipoCounts(excelRows);
+  document.getElementById('tab100').innerHTML = `
+    ${noIdentificadoNote(c)}
+    <p class="mn-table-title">ATENCIONES REALIZADAS Y CANTIDAD</p>
+    <table class="mn-img-table">
+      <thead><tr><th>ATENCIONES REALIZADAS</th><th>CANTIDAD</th></tr></thead>
+      <tbody>
+        <tr><td>INCIDENCIAS</td><td>${c.incidencias}</td></tr>
+        <tr><td>SOLICITUDES</td><td>${c.solicitudes}</td></tr>
+        <tr><td>TOTAL</td><td>${c.total}</td></tr>
+      </tbody>
+    </table>
+
+    <p class="mn-table-title">TIPO DE SOLICITUDES</p>
+    <table class="mn-img-table">
+      <thead><tr><th>TIPO DE SOLICITUDES</th><th>SOLICITUDES</th><th>PORCENTAJE</th></tr></thead>
+      <tbody>
+        <tr><td>INCIDENCIA</td><td>${c.incidencias}</td><td>${pct(c.incidencias,c.total)}%</td></tr>
+        <tr><td>SOLICITUD</td><td>${c.solicitudes}</td><td>${pct(c.solicitudes,c.total)}%</td></tr>
+        <tr><td>TOTAL</td><td>${c.total}</td><td>100.0%</td></tr>
+      </tbody>
+    </table>`;
+}
+
+function renderTabPct(){
+  const selectedPct = Number(percentSelect.value);
+  const { totalGeneral, noExcedidoRows, siCount, sampleSize, sample } = getSeleccionPorPorcentaje(selectedPct);
+  const c = getTipoCounts(sample);
+
+  document.getElementById('tabPct').innerHTML = `
+    <p class="text-muted small mb-3">De ${totalGeneral} tickets se excluyen ${siCount} marcados con "Sí" en "Tiempo para resolver excedido", quedando ${noExcedidoRows.length}. Al <strong>${selectedPct}%</strong> se toman <strong>${sampleSize}</strong> tickets.</p>
+    ${noIdentificadoNote(c)}
+
+    <p class="mn-table-title">SOLICITUDES POR TIPO</p>
+    <table class="mn-img-table">
+      <thead><tr><th>SOLICITUDES POR TIPO</th><th class="mn-num-col">TOTAL</th></tr></thead>
+      <tbody>
+        <tr><td>INCIDENCIAS</td><td class="mn-num-col">${c.incidencias}</td></tr>
+        <tr><td>SOLICITUDES</td><td class="mn-num-col">${c.solicitudes}</td></tr>
+        <tr><td>TOTAL</td><td class="mn-num-col">${c.total}</td></tr>
+      </tbody>
+    </table>
+
+    <p class="mn-table-title">SOLICITUDES POR TIPO</p>
+    <table class="mn-img-table">
+      <thead><tr><th>SOLICITUDES POR TIPO</th><th class="mn-num-col">TOTAL</th><th class="mn-num-col">PORCENTAJE</th></tr></thead>
+      <tbody>
+        <tr><td>INCIDENCIAS</td><td class="mn-num-col">${c.incidencias}</td><td class="mn-num-col">${pct(c.incidencias,c.total)}%</td></tr>
+        <tr><td>SOLICITUDES</td><td class="mn-num-col">${c.solicitudes}</td><td class="mn-num-col">${pct(c.solicitudes,c.total)}%</td></tr>
+        <tr><td>TOTAL</td><td class="mn-num-col">${c.total}</td><td class="mn-num-col">100.0%</td></tr>
+      </tbody>
+    </table>`;
+}
+
+function renderPareto(){
+  const counts = {};
+  excelRows.forEach(r => {
+    const cat = String(r['Categoría']).trim() || '(sin categoría)';
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  const totalCat = Object.values(counts).reduce((a,b)=>a+b,0);
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+
+  let cumulative = 0;
+  const paretoData = sorted.map(([cat, freq]) => {
+    const p = totalCat ? (freq/totalCat*100) : 0;
+    cumulative += p;
+    return { cat, freq, pct: p, cum: cumulative };
+  });
+
+  const labels = paretoData.map(d => d.cat);
+  const freqs = paretoData.map(d => d.freq);
+  const cums = paretoData.map(d => Number(d.cum.toFixed(1)));
+
+  if(paretoChartInstance) paretoChartInstance.destroy();
+  const ctx = document.getElementById('paretoChart').getContext('2d');
+  paretoChartInstance = new Chart(ctx, {
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          type: 'bar', label: 'Frecuencia', data: freqs,
+          backgroundColor: '#46D55A', order: 2, yAxisID: 'y'
+        },
+        {
+          type: 'line', label: '% Acumulado', data: cums,
+          borderColor: '#FFFF00', backgroundColor: '#FFFF00',
+          tension: 0.25, order: 1, yAxisID: 'y1', pointRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        customCanvasBackgroundColor: { color: '#156082' },
+        legend: { labels: { color: '#FFFFFF' } },
+        datalabels: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#FFFFFF', font: { size: 9 }, maxRotation: 90, minRotation: 90, autoSkip: false },
+          grid: { color: '#E77032' }
+        },
+        y: {
+          position: 'left', beginAtZero: true, max: totalCat,
+          title: { display: true, text: 'Frecuencia', color: '#FFFFFF' },
+          ticks: { color: '#FFFFFF', precision: 0 }, grid: { color: '#E77032' }
+        },
+        y1: {
+          position: 'right', min: 0, max: 100,
+          title: { display: true, text: '% Acumulado', color: '#FFFFFF' },
+          ticks: { color: '#FFFFFF' }, grid: { drawOnChartArea: false }
+        }
+      }
+    }
+  });
+
+  let rowsHtml = paretoData.map(d => `
+    <tr>
+      <td style="text-align:left;">${d.cat}</td>
+      <td class="mn-num-col">${d.freq}</td>
+      <td class="mn-num-col">${d.pct.toFixed(1)}%</td>
+      <td class="mn-num-col">${d.cum.toFixed(1)}%</td>
+    </tr>`).join('');
+
+  document.getElementById('paretoTableWrap').innerHTML = `
+    <div class="mn-compact-wrap">
+      <p class="mn-table-title">DIAGRAMA DE PARETO POR CATEGORÍA</p>
+      <table class="mn-img-table">
+        <thead><tr><th style="text-align:left;">CATEGORÍA</th><th class="mn-num-col">FRECUENCIA</th><th class="mn-num-col">PORCENTAJE</th><th class="mn-num-col">% ACUMULADO</th></tr></thead>
+        <tbody>${rowsHtml}
+          <tr><td style="text-align:left; font-weight:700;">TOTAL</td><td class="mn-num-col" style="font-weight:700;">${totalCat}</td><td class="mn-num-col" style="font-weight:700;">100.0%</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ---------- Pestaña 4: Gráficos al 100% ----------
+
+function normalizeEstado(v){ return stripAccents(String(v||'').trim().toLowerCase()); }
+
+// estilo base compartido por los 3 gráficos de barras "3D" (colores pedidos)
+function shadeColor(hex, percent){
+  const f = parseInt(hex.slice(1), 16);
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent);
+  const R = f >> 16, G = (f >> 8) & 0x00FF, B = f & 0x0000FF;
+  return "#" + (0x1000000 +
+    (Math.round((t - R) * p) + R) * 0x10000 +
+    (Math.round((t - G) * p) + G) * 0x100 +
+    (Math.round((t - B) * p) + B)
+  ).toString(16).slice(1);
+}
+
+function draw3DBarChart(canvas, opts){
+  const {
+    title, categories, values,
+    barColor = '#46D55A', valueColor = '#FFFF00', gridColor = '#E77032',
+    bgColor = '#156082', labelColor = '#FFFFFF', showValues = true, rotateLabels = false
+  } = opts;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = labelColor;
+  ctx.font = 'bold 20px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, W / 2, 36);
+
+  const depthX = 16, depthY = -14;
+  const marginLeft = 64, marginRight = 50, marginTop = 64;
+  const marginBottom = rotateLabels ? 130 : 60;
+  const plotW = W - marginLeft - marginRight - depthX;
+  const plotH = H - marginTop - marginBottom - Math.abs(depthY);
+  const baseY = H - marginBottom;
+
+  // eje vertical: escala en base al TOTAL numérico (suma de todos los valores)
+  const axisMax = opts.axisMax || values.reduce((a, b) => a + b, 0) || 1;
+  const steps = 4;
+
+  // líneas de referencia + números del eje
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  ctx.font = '11px Inter, sans-serif';
+  for(let i = 0; i <= steps; i++){
+    const y = baseY - (plotH * (i / steps));
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, y);
+    ctx.lineTo(marginLeft + plotW + depthX, y);
+    ctx.stroke();
+
+    const tickVal = Math.round(axisMax * (i / steps));
+    ctx.fillStyle = labelColor;
+    ctx.textAlign = 'right';
+    ctx.fillText(String(tickVal), marginLeft - 10, y + 4);
+  }
+  // línea del eje
+  ctx.strokeStyle = labelColor;
+  ctx.beginPath();
+  ctx.moveTo(marginLeft, marginTop + 20);
+  ctx.lineTo(marginLeft, baseY);
+  ctx.stroke();
+
+  const n = categories.length || 1;
+  const gap = n > 6 ? 14 : 30;
+  const barWidth = Math.max((plotW - gap * (n - 1)) / n, 8);
+
+  categories.forEach((cat, i) => {
+    const val = values[i] || 0;
+    const barH = axisMax ? (val / axisMax) * plotH : 0;
+    const x = marginLeft + i * (barWidth + gap);
+    const yTop = baseY - barH;
+
+    // cara superior (extrusión)
+    ctx.fillStyle = shadeColor(barColor, 0.35);
+    ctx.beginPath();
+    ctx.moveTo(x, yTop);
+    ctx.lineTo(x + barWidth, yTop);
+    ctx.lineTo(x + barWidth + depthX, yTop + depthY);
+    ctx.lineTo(x + depthX, yTop + depthY);
+    ctx.closePath();
+    ctx.fill();
+
+    // cara lateral derecha (sombra)
+    ctx.fillStyle = shadeColor(barColor, -0.35);
+    ctx.beginPath();
+    ctx.moveTo(x + barWidth, yTop);
+    ctx.lineTo(x + barWidth + depthX, yTop + depthY);
+    ctx.lineTo(x + barWidth + depthX, baseY + depthY);
+    ctx.lineTo(x + barWidth, baseY);
+    ctx.closePath();
+    ctx.fill();
+
+    // cara frontal
+    ctx.fillStyle = barColor;
+    ctx.fillRect(x, yTop, barWidth, barH);
+
+    if(showValues){
+      ctx.fillStyle = valueColor;
+      ctx.font = 'bold 15px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      const labelY = Math.min(Math.max(yTop + 20, marginTop + 40), baseY - 6);
+      ctx.fillText(String(val), x + barWidth / 2, labelY);
+    }
+
+    ctx.fillStyle = labelColor;
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.save();
+    ctx.translate(x + barWidth / 2, baseY + 18);
+    if(rotateLabels){
+      ctx.rotate(-Math.PI / 6);
+      ctx.textAlign = 'right';
+      const shortLabel = cat.length > 20 ? cat.slice(0, 20) + '…' : cat;
+      ctx.fillText(shortLabel, 0, 0);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText(cat, 0, 0);
+    }
+    ctx.restore();
+  });
+}
+
+function drawLegend(ctx, cx, bottomY, labels, colors, maxWidth, labelColor){
+  ctx.font = '12px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  const swatch = 12, itemGap = 16, lineHeight = 20;
+  const items = labels.map((l, i) => ({ label: l, color: colors[i % colors.length], w: ctx.measureText(l).width + swatch + 6 }));
+  const rows = [];
+  let current = [], currentW = 0;
+  items.forEach(it => {
+    if(current.length && currentW + itemGap + it.w > maxWidth){
+      rows.push({ items: current, width: currentW });
+      current = []; currentW = 0;
+    }
+    current.push(it);
+    currentW += (currentW ? itemGap : 0) + it.w;
+  });
+  if(current.length) rows.push({ items: current, width: currentW });
+
+  const totalHeight = rows.length * lineHeight;
+  let y = bottomY - totalHeight + lineHeight - 6;
+  rows.forEach(row => {
+    let x = cx - row.width / 2;
+    row.items.forEach(it => {
+      ctx.fillStyle = it.color;
+      ctx.fillRect(x, y - 10, swatch, swatch);
+      ctx.fillStyle = labelColor;
+      ctx.fillText(it.label, x + swatch + 4, y);
+      x += it.w + itemGap;
+    });
+    y += lineHeight;
+  });
+  return totalHeight;
+}
+
+function draw3DPieChart(canvas, opts){
+  const { title, labels, values, colors, bgColor = '#156082', strokeColor = '#E77032', valueColor = '#FFFF00', labelColor = '#FFFFFF' } = opts;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = labelColor;
+  ctx.font = 'bold 20px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, W / 2, 36);
+
+  const total = values.reduce((a, b) => a + b, 0) || 1;
+  const cx = W / 2, cy = H * 0.40;
+  const rx = Math.min(W, H) * 0.34, ry = rx * 0.55;
+  const depth = 24;
+
+  // "cilindro" de profundidad (da el efecto de disco 3D)
+  const layers = 16;
+  for(let L = layers; L >= 1; L--){
+    const offsetY = (depth * L) / layers;
+    let a = -Math.PI / 2;
+    values.forEach((val, i) => {
+      const slice = (val / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + offsetY);
+      ctx.ellipse(cx, cy + offsetY, rx, ry, 0, a, a + slice);
+      ctx.closePath();
+      ctx.fillStyle = shadeColor(colors[i % colors.length], -0.45);
+      ctx.fill();
+      a += slice;
+    });
+  }
+
+  // tapa superior con los colores reales
+  let a = -Math.PI / 2;
+  const midAngles = [];
+  values.forEach((val, i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.ellipse(cx, cy, rx, ry, 0, a, a + slice);
+    ctx.closePath();
+    const baseColor = colors[i % colors.length];
+    const gloss = ctx.createRadialGradient(cx - rx * 0.3, cy - ry * 0.35, rx * 0.05, cx, cy, rx);
+    gloss.addColorStop(0, shadeColor(baseColor, 0.45));
+    gloss.addColorStop(1, baseColor);
+    ctx.fillStyle = gloss;
+    ctx.fill();
+    midAngles.push(a + slice / 2);
+    a += slice;
+  });
+
+  // valores fuera de cada porción
+  ctx.font = 'bold 13px Inter, sans-serif';
+  values.forEach((val, i) => {
+    const ang = midAngles[i];
+    const lx = cx + Math.cos(ang) * (rx + 30);
+    const ly = cy + Math.sin(ang) * (ry + 20);
+    ctx.fillStyle = valueColor;
+    ctx.textAlign = Math.cos(ang) >= 0 ? 'left' : 'right';
+    ctx.fillText(String(val), lx, ly);
+  });
+
+  drawLegend(ctx, cx, H - 14, labels, colors, W - 60, labelColor);
+}
+
+function renderChartEstado(){
+  let cerrado = 0, resuelto = 0;
+  excelRows.forEach(r => {
+    const e = normalizeEstado(r['Estado']);
+    if(e.startsWith('cerrado')) cerrado++;
+    else if(e.startsWith('resuelto')) resuelto++;
+  });
+  draw3DBarChart(document.getElementById('chartEstado'), {
+    title: 'PETICIONES POR ESTADO', categories: ['CERRADO', 'RESUELTO'], values: [cerrado, resuelto]
+  });
+}
+
+function renderChartTipo(){
+  const c = getTipoCounts(excelRows);
+  draw3DBarChart(document.getElementById('chartTipo'), {
+    title: 'SOLICITUDES POR TIPO', categories: ['INCIDENTES', 'SOLICITUDES'], values: [c.incidencias, c.solicitudes]
+  });
+}
+
+function renderChartCategoria(){
+  const counts = {};
+  excelRows.forEach(r => {
+    if(classifyTipo(r['Tipo']) !== 'solicitud') return;
+    const cat = String(r['Categoría']).trim() || '(sin categoría)';
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  const top10 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  draw3DBarChart(document.getElementById('chartCategoria'), {
+    title: 'PETICIONES POR SOLICITUDES',
+    categories: top10.map(([cat]) => cat),
+    values: top10.map(([, v]) => v),
+    showValues: false, rotateLabels: true
+  });
+}
+
+const PASTEL_COLORS = ['#2ED573','#2E9BF0','#FF8C42','#A55EEA','#FF5E7E','#FFD93D','#22D3C4','#FF6FB0'];
+
+function renderChartTiempo(){
+  const counts = {};
+  BUCKET_ORDER.forEach(b => counts[b] = 0);
+  excelRows.forEach(r => {
+    const h = parseHorasResolucion(r['Estadísticas - Hora de resolución']);
+    const b = bucketHoras(h);
+    if(b) counts[b]++;
+  });
+  const labels = BUCKET_ORDER.filter(b => counts[b] > 0);
+  const values = labels.map(b => counts[b]);
+  const colors = labels.map((_, i) => PASTEL_COLORS[i % PASTEL_COLORS.length]);
+
+  draw3DPieChart(document.getElementById('chartTiempo'), {
+    title: 'TIEMPO DE SOLUCIONES DE PETICIONES', labels, values, colors
+  });
+}
+
+function renderGraficos100(){
+  renderChartEstado();
+  renderChartTipo();
+  renderChartCategoria();
+  renderChartTiempo();
+}
+
+// ---------- Pestaña 5: Tablas y Gráficos de % ----------
+
+function getOrderedUniqueCategories(rows){
+  const seen = new Set();
+  const ordered = [];
+  rows.forEach(r => {
+    const cat = String(r['Categoría']).trim() || '(sin categoría)';
+    if(!seen.has(cat)){ seen.add(cat); ordered.push(cat); }
+  });
+  return ordered;
+}
+
+function getCategoryCountsByTipo(rows, tipoKey){
+  const counts = {};
+  rows.forEach(r => {
+    if(classifyTipo(r['Tipo']) !== tipoKey) return;
+    const cat = String(r['Categoría']).trim() || '(sin categoría)';
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  return counts;
+}
+
+function renderImgTable(containerId, countsObj, valueLabel){
+  const sortedDesc = Object.entries(countsObj).sort((a, b) => b[1] - a[1]);
+  const rowsHtml = sortedDesc.map(([cat, val]) =>
+    `<tr><td>${cat}</td><td class="mn-num-col">${val}</td></tr>`
+  ).join('');
+  document.getElementById(containerId).innerHTML = `
+    <table class="mn-img-table">
+      <thead><tr><th>Categoría</th><th class="mn-num-col">${valueLabel}</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+}
+
+function truncateText(ctx, text, maxWidth){
+  if(ctx.measureText(text).width <= maxWidth) return text;
+  let t = text;
+  while(t.length > 1 && ctx.measureText(t + '…').width > maxWidth){
+    t = t.slice(0, -1);
+  }
+  return t + '…';
+}
+
+// mismo estilo/colores 3D que la pestaña 3, en versión horizontal (para nombres de categoría largos)
+function draw3DBarChartHorizontal(canvas, opts){
+  const {
+    title, categories, values,
+    barColor = '#46D55A', gridColor = '#E77032', bgColor = '#156082', labelColor = '#FFFFFF'
+  } = opts;
+
+  const n = categories.length || 1;
+  const rowH = 26;
+  const marginTop = 60, marginBottom = 46, marginLeftBase = 20, marginRight = 60;
+  const labelAreaWidth = 280;
+  const marginLeft = marginLeftBase + labelAreaWidth;
+  const depthX = 14, depthY = -10;
+
+  const W = canvas.width || 900;
+  const H = marginTop + marginBottom + n * rowH + Math.abs(depthY) + 20;
+  canvas.height = H;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = labelColor;
+  ctx.font = 'bold 20px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, W / 2, 34);
+
+  const plotW = W - marginLeft - marginRight - depthX;
+  const plotH = n * rowH;
+  const axisMax = values.reduce((a, b) => a + b, 0) || 1;
+  const steps = 4;
+
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  ctx.font = '11px Inter, sans-serif';
+  for(let i = 0; i <= steps; i++){
+    const x = marginLeft + plotW * (i / steps);
+    ctx.beginPath();
+    ctx.moveTo(x, marginTop);
+    ctx.lineTo(x, marginTop + plotH);
+    ctx.stroke();
+    const tickVal = Math.round(axisMax * (i / steps));
+    ctx.fillStyle = labelColor;
+    ctx.textAlign = 'center';
+    ctx.fillText(String(tickVal), x, marginTop + plotH + 18);
+  }
+
+  categories.forEach((cat, i) => {
+    const val = values[i] || 0;
+    const barLen = axisMax ? (val / axisMax) * plotW : 0;
+    const y = marginTop + i * rowH + 4;
+    const barThick = rowH - 8;
+
+    ctx.fillStyle = shadeColor(barColor, 0.35);
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, y);
+    ctx.lineTo(marginLeft + barLen, y);
+    ctx.lineTo(marginLeft + barLen + depthX, y + depthY);
+    ctx.lineTo(marginLeft + depthX, y + depthY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = shadeColor(barColor, -0.35);
+    ctx.beginPath();
+    ctx.moveTo(marginLeft + barLen, y);
+    ctx.lineTo(marginLeft + barLen + depthX, y + depthY);
+    ctx.lineTo(marginLeft + barLen + depthX, y + depthY + barThick);
+    ctx.lineTo(marginLeft + barLen, y + barThick);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = barColor;
+    ctx.fillRect(marginLeft, y, barLen, barThick);
+
+    ctx.fillStyle = labelColor;
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    const label = truncateText(ctx, cat, labelAreaWidth - 12);
+    ctx.fillText(label, marginLeft - 12, y + barThick / 2 + 4);
+  });
+}
+
+function renderTablasGraficosPct(){
+  const pctGuardado = Number(percentSelect.value);
+  const { totalGeneral, noExcedidoRows, siCount, sampleSize, sample } = getSeleccionPorPorcentaje(pctGuardado);
+
+  document.getElementById('pctGuardadoNote').innerHTML =
+    `<i class="bi bi-bookmark-check"></i> De ${totalGeneral} tickets se excluyen ${siCount} marcados con "Sí" en "Tiempo para resolver excedido", quedando ${noExcedidoRows.length}. Al <strong>${pctGuardado}%</strong> se toman <strong>${sampleSize}</strong> tickets.`;
+
+  const tipoCountsFiltrado = getTipoCounts(sample);
+  draw3DBarChart(document.getElementById('chartTipoPct'), {
+    title: 'SOLICITUDES POR TIPO', categories: ['INCIDENTES', 'SOLICITUDES'],
+    values: [tipoCountsFiltrado.incidencias, tipoCountsFiltrado.solicitudes]
+  });
+
+  const solCounts = getCategoryCountsByTipo(sample, 'solicitud');
+  const incCounts = getCategoryCountsByTipo(sample, 'incidencia');
+
+  renderImgTable('tablaSolicitudesWrap', solCounts, 'Solicitudes');
+  renderImgTable('tablaIncidentesWrap', incCounts, 'Incidentes');
+
+  const solAsc = Object.entries(solCounts).sort((a, b) => a[1] - b[1]);
+  const incAsc = Object.entries(incCounts).sort((a, b) => a[1] - b[1]);
+
+  draw3DBarChartHorizontal(document.getElementById('chartSolicitudesCat'), {
+    title: 'CATEGORÍA Y SOLICITUDES', categories: solAsc.map(([c]) => c), values: solAsc.map(([, v]) => v)
+  });
+  draw3DBarChartHorizontal(document.getElementById('chartIncidentesCat'), {
+    title: 'CATEGORÍA E INCIDENTES', categories: incAsc.map(([c]) => c), values: incAsc.map(([, v]) => v)
+  });
+}
+
+// ---------- Pestaña 6: Anexos ----------
+
+const ANEXO_HEADERS = ['ITEM', 'ID', 'Título', 'Estado', 'Asignado a - Técnico', 'Tipo'];
+const ANEXO_BORDER = {
+  top: { style: 'thin', color: { argb: 'FFA9D4E8' } },
+  bottom: { style: 'thin', color: { argb: 'FFA9D4E8' } },
+  left: { style: 'thin', color: { argb: 'FFA9D4E8' } },
+  right: { style: 'thin', color: { argb: 'FFA9D4E8' } }
+};
+
+async function generarAnexoExcel(rows, filename){
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Anexo');
+
+  const headerRow = ws.addRow(ANEXO_HEADERS);
+  headerRow.eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, name: 'Arial' };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF156082' } };
+    cell.alignment = { vertical: 'middle' };
+    cell.border = ANEXO_BORDER;
+  });
+  headerRow.height = 20;
+
+  rows.forEach((r, i) => {
+    const row = ws.addRow([
+      i + 1,
+      r['ID'] ?? '',
+      r['Título'] ?? '',
+      r['Estado'] ?? '',
+      r['Asignado a - Técnico'] ?? '',
+      r['Tipo'] ?? ''
+    ]);
+    const fillColor = (i % 2 === 0) ? 'FFC0E6F5' : 'FFFFFFFF';
+    row.eachCell(cell => {
+      cell.font = { name: 'Arial', size: 10 };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+      cell.border = ANEXO_BORDER;
+    });
+  });
+
+  ws.columns = [{ width: 8 }, { width: 14 }, { width: 45 }, { width: 14 }, { width: 26 }, { width: 14 }];
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function initAnexos(){
+  const pct = Number(percentSelect.value);
+  const { totalGeneral, noExcedidoRows, siCount, sampleSize } = getSeleccionPorPorcentaje(pct);
+  document.getElementById('anexoPctNote').textContent =
+    `De ${totalGeneral} tickets se excluyen ${siCount} marcados con "Sí" en "Tiempo para resolver excedido", quedando ${noExcedidoRows.length}. Al ${pct}% se toman ${sampleSize} tickets.`;
+}
+
+document.getElementById('btnAnexo100').addEventListener('click', () => {
+  generarAnexoExcel(excelRows, 'anexo_100pct.xlsx');
+});
+
+document.getElementById('btnAnexoPct').addEventListener('click', () => {
+  const pct = Number(percentSelect.value);
+  const { sample } = getSeleccionPorPorcentaje(pct);
+  generarAnexoExcel(sample, `anexo_${pct}pct.xlsx`);
+});
+
+// intenta parsear la columna "Estadísticas - Hora de resolución" en varios formatos posibles
+// (HH:MM:SS, "X días HH:MM:SS", "X horas Y minutos", número simple de horas)
+function parseHorasResolucion(v){
+  if(v === null || v === undefined || v === '') return null;
+  if(typeof v === 'number'){
+    return v; // se asume que ya viene en horas
+  }
+  const s = String(v).trim();
+  if(!s) return null;
+
+  let dias = 0;
+  const diaMatch = s.match(/(\d+)\s*d[ií]as?/i);
+  if(diaMatch) dias = parseInt(diaMatch[1], 10);
+
+  const hmsMatch = s.match(/(\d{1,4}):(\d{2}):(\d{2})/);
+  if(hmsMatch){
+    const h = parseInt(hmsMatch[1],10), m = parseInt(hmsMatch[2],10), sec = parseInt(hmsMatch[3],10);
+    return dias*24 + h + m/60 + sec/3600;
+  }
+  const hmMatch = s.match(/^(\d{1,4}):(\d{2})$/);
+  if(hmMatch){
+    const h = parseInt(hmMatch[1],10), m = parseInt(hmMatch[2],10);
+    return dias*24 + h + m/60;
+  }
+  const hMatch = s.match(/(\d+(\.\d+)?)\s*h(oras?)?/i);
+  const mMatch = s.match(/(\d+(\.\d+)?)\s*m(in(utos?)?)?/i);
+  if(hMatch || mMatch || dias){
+    let total = dias*24;
+    if(hMatch) total += parseFloat(hMatch[1]);
+    if(mMatch) total += parseFloat(mMatch[1])/60;
+    return total;
+  }
+  const num = parseFloat(s.replace(',', '.'));
+  return isNaN(num) ? null : num;
+}
+
+const BUCKET_ORDER = ['0 a 3 horas','3 a 4 horas','4 a 5 horas','5 a 6 horas','6 a 7 horas','7 a 8 horas','8 a 12 horas','12 horas a más'];
+function bucketHoras(h){
+  if(h === null || h === undefined || isNaN(h)) return null;
+  if(h < 3) return '0 a 3 horas';
+  if(h < 4) return '3 a 4 horas';
+  if(h < 5) return '4 a 5 horas';
+  if(h < 6) return '5 a 6 horas';
+  if(h < 7) return '6 a 7 horas';
+  if(h < 8) return '7 a 8 horas';
+  if(h < 12) return '8 a 12 horas';
+  return '12 horas a más';
+}
+
+// estilo base compartido por los 3 gráficos de barras "apiladas" (colores pedidos)
+
+document.getElementById('btnGenerate').addEventListener('click', () => {
+  renderTab100();
+  renderTabPct();
+  renderPareto();
+  renderGraficos100();
+  renderTablasGraficosPct();
+  initAnexos();
+  resultsSection.style.display = 'block';
+});
+
+percentSelect.addEventListener('change', () => {
+  if(resultsSection.style.display !== 'none'){
+    renderTabPct();
+    renderTablasGraficosPct();
+    initAnexos();
+  }
+});
+
+document.querySelectorAll('#mnTabs .nav-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mnTabs .nav-link').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mn-tabpane').forEach(p => p.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).style.display = 'block';
+  });
+});
+</script>
+</body>
+</html>
