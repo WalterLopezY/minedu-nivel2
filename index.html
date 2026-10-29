@@ -10,123 +10,367 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
+  /* Diseño "vidrio" estilo Apple: fondo con color suave, tarjetas translúcidas con desenfoque,
+     botones tipo píldora que "flotan" (sombra) y controles segmentados.
+     Los colores de tablas y gráficos del informe (#156082, #C0E6F5, verde) NO cambian. */
   :root{
     --mn-red:#C8102E;
-    --mn-red-dark:#8E0B21;
-    --mn-ink:#26221E;
-    --mn-muted:#6B6459;
-    --mn-bg:#F6F4F0;
-    --mn-line:#E3DFD5;
+    --mn-red-dark:#9E0C24;
+    --mn-blue:#156082;
+    --mn-ink:#1D1D1F;
+    --mn-muted:#6E6E73;
+    --mn-ok:#1E7B45;
+    --mn-warn:#9A6700;
+    --mn-bg:#EEF1F5;
+    --mn-line:rgba(15,23,42,.10);
+    --glass:rgba(255,255,255,.62);
+    --glass-fuerte:rgba(255,255,255,.80);
+    --glass-borde:rgba(255,255,255,.85);
+    --sombra-flota:0 10px 30px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
+    --fuente:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+    --fuente-titulo:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+    color-scheme:light;
   }
+  html{ background:var(--mn-bg); }
   body{
-    font-family:'Inter',sans-serif;
-    background:var(--mn-bg);
+    font-family:var(--fuente);
     color:var(--mn-ink);
+    background:
+      radial-gradient(900px 500px at 8% -5%, rgba(21,96,130,.22), transparent 60%),
+      radial-gradient(800px 480px at 100% 0%, rgba(200,16,46,.14), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(70,160,213,.16), transparent 60%),
+      var(--mn-bg);
+    background-attachment:fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
   }
-  .mn-header{
-    background:#fff;
-    border-bottom:4px solid var(--mn-red);
-    padding:20px 28px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:16px;
-  }
-  .mn-eyebrow{
-    font-family:'Inter',sans-serif;
-    font-size:12px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--mn-red);
-    font-weight:600;
-    margin:0 0 2px;
-  }
-  .mn-title{
-    font-family:'Poppins',sans-serif;
-    font-weight:700;
-    font-size:clamp(20px,3vw,30px);
-    margin:0;
-    color:var(--mn-ink);
-  }
-  .mn-logo{ height:56px; object-fit:contain; }
-  .mn-container{ max-width:1200px; margin:0 auto; padding:32px 20px 60px; }
 
+  /* barra superior de vidrio, fija al hacer scroll */
+  .mn-header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(255,255,255,.66);
+    -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid rgba(15,23,42,.08);
+    box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
+    padding:14px max(20px, env(safe-area-inset-right, 0px)) 14px max(20px, env(safe-area-inset-left, 0px));
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  }
+  .mn-header::after{
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:linear-gradient(90deg, var(--mn-red), #E0587A 40%, var(--mn-blue));
+    opacity:.85;
+  }
+  .mn-eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--mn-red); font-weight:600; margin:0 0 2px; }
+  .mn-title{ font-family:var(--fuente-titulo); font-weight:700; letter-spacing:-.02em; font-size:clamp(18px,2.6vw,26px); margin:0; color:var(--mn-ink); text-wrap:balance; }
+  .mn-logo{ height:44px; width:auto; max-width:100%; object-fit:contain; }
+  @media (max-width:560px){ .mn-logo{ height:34px; } }
+  .mn-container{ max-width:1180px; margin:0 auto; padding:28px max(16px, env(safe-area-inset-right, 0px)) 120px max(16px, env(safe-area-inset-left, 0px)); }
+
+  /* tarjetas de vidrio */
   .mn-card{
-    background:#fff;
-    border:1px solid var(--mn-line);
-    border-radius:14px;
+    background:var(--glass);
+    -webkit-backdrop-filter:saturate(180%) blur(24px); backdrop-filter:saturate(180%) blur(24px);
+    border:1px solid var(--glass-borde);
+    border-radius:24px;
     padding:24px;
     margin-bottom:24px;
+    box-shadow:var(--sombra-flota);
   }
+
+  /* zonas para soltar archivos */
   .mn-drop{
-    border:2px dashed var(--mn-line);
-    border-radius:12px;
-    padding:40px 20px;
-    text-align:center;
-    cursor:pointer;
-    transition:.15s;
+    border:1.5px dashed rgba(21,96,130,.28);
+    border-radius:20px;
+    padding:34px 20px;
+    text-align:center; cursor:pointer;
+    background:var(--glass-fuerte);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
   }
-  .mn-drop:hover, .mn-drop.over{ border-color:var(--mn-red); background:#FBF3F4; }
-  .mn-drop i{ font-size:32px; color:var(--mn-red); }
-  .mn-drop p{ margin:10px 0 0; color:var(--mn-muted); font-size:14px; }
+  .mn-drop:hover, .mn-drop.over{ border-color:var(--mn-red); background:#fff; transform:translateY(-2px); box-shadow:var(--sombra-flota); }
+  .mn-drop i{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:56px; height:56px; border-radius:50%;
+    font-size:26px; color:var(--mn-red);
+    background:linear-gradient(180deg, #fff, #F4F6F9);
+    box-shadow:0 6px 16px rgba(200,16,46,.15), 0 0 0 1px rgba(15,23,42,.05);
+  }
+  .mn-drop p{ margin:12px 0 0; color:var(--mn-muted); font-size:14px; }
+  .mn-drop p strong{ color:var(--mn-ink); font-weight:600; }
 
   .mn-validation{ display:flex; align-items:center; gap:10px; margin-top:16px; font-weight:600; font-size:15px; }
-  .mn-validation.ok{ color:#1E7B45; }
+  .mn-validation.ok{ color:var(--mn-ok); }
   .mn-validation.err{ color:var(--mn-red); }
   .mn-validation i{ font-size:22px; }
   .mn-missing{ font-size:13px; color:var(--mn-muted); margin:4px 0 0 32px; }
 
-  .btn-mn{ background:var(--mn-red); border-color:var(--mn-red); color:#fff; font-weight:600; }
-  .btn-mn:hover{ background:var(--mn-red-dark); border-color:var(--mn-red-dark); color:#fff; }
+  /* botones tipo píldora, "flotantes" */
+  .btn{ border-radius:999px; font-weight:600; letter-spacing:.01em; transition:transform .15s ease, box-shadow .2s ease, background .2s ease; }
+  .btn:active{ transform:scale(.97); }
+  .btn-mn{
+    color:#fff; border:1px solid rgba(255,255,255,.25);
+    background:linear-gradient(180deg, #E1294B 0%, var(--mn-red) 55%, var(--mn-red-dark) 100%);
+    box-shadow:0 10px 24px rgba(200,16,46,.30), inset 0 1px 0 rgba(255,255,255,.35);
+    padding:.65rem 1.4rem;
+  }
+  .btn-mn:hover, .btn-mn:focus-visible{ color:#fff; transform:translateY(-2px); box-shadow:0 16px 32px rgba(200,16,46,.36), inset 0 1px 0 rgba(255,255,255,.4); background:linear-gradient(180deg, #E8355A 0%, #D0153A 55%, var(--mn-red-dark) 100%); }
+  .btn-outline-secondary{
+    color:var(--mn-ink); border:1px solid var(--glass-borde);
+    background:var(--glass-fuerte);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    box-shadow:0 4px 12px rgba(15,23,42,.08);
+  }
+  .btn-outline-secondary:hover{ color:var(--mn-ink); background:#fff; border-color:#fff; transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,.12); }
+  .btn:focus-visible{ outline:3px solid rgba(21,96,130,.35); outline-offset:2px; }
 
-  .nav-tabs .nav-link{ color:var(--mn-muted); font-weight:600; font-size:14px; }
-  .nav-tabs .nav-link.active{ color:var(--mn-red); border-color:var(--mn-line) var(--mn-line) #fff; border-top:3px solid var(--mn-red); }
+  /* listas desplegables */
+  .form-select.mn-select{
+    border-radius:14px; border:1px solid rgba(15,23,42,.10);
+    background-color:var(--glass-fuerte); padding:.6rem 2.25rem .6rem .9rem;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+  }
+  .form-select.mn-select:focus{ border-color:var(--mn-blue); box-shadow:0 0 0 4px rgba(21,96,130,.15); }
+  .form-label{ font-weight:500; }
+  .mn-controles-listas{ display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-end; gap:14px; }
+  .mn-control-pct{ flex:0 1 150px; }
+  .mn-control-cuota{ flex:0 1 520px; min-width:0; }
+  @media (max-width:560px){ .mn-control-pct, .mn-control-cuota{ flex:1 1 100%; } }
+  .mn-manual-enlace{ max-width:720px; margin:18px auto 0; padding:16px 18px; border-radius:18px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); box-shadow:0 6px 18px rgba(15,23,42,.07); text-align:center; animation:mnEntra .5s var(--suave) both; }
+  .mn-manual-enlace-titulo{ font-weight:600; margin:0 0 10px; }
+  .mn-manual-enlace-campos{ display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:left; }
+  @media (max-width:560px){ .mn-manual-enlace-campos{ grid-template-columns:1fr; } }
+  .form-control.mn-input{ border-radius:14px; border:1px solid rgba(15,23,42,.10); background:var(--glass-fuerte); padding:.55rem .9rem; box-shadow:0 2px 8px rgba(15,23,42,.05); }
+  .form-control.mn-input:focus{ border-color:var(--mn-blue); box-shadow:0 0 0 4px rgba(21,96,130,.15); }
+  .form-control.mn-input:invalid:not(:placeholder-shown){ border-color:var(--mn-red); }
+
+  /* control segmentado de documentos (Entregable · Conformidad · Eleva) */
+  .mn-seg{
+    position:relative; display:flex; flex-wrap:wrap; justify-content:center; gap:4px;
+    width:fit-content; max-width:100%; margin:0 auto 12px; padding:5px; border-radius:16px;
+    background:rgba(118,118,128,.14);
+  }
+  .mn-seg-btn{
+    position:relative; z-index:1; border:none; background:transparent; border-radius:12px;
+    padding:.5rem 1rem; font-weight:600; font-size:13.5px; color:var(--mn-muted); cursor:pointer;
+    transition:color .25s var(--suave);
+  }
+  .mn-seg-btn:hover{ color:var(--mn-ink); }
+  .mn-seg-btn.active{ color:var(--mn-ink); }
+  .mn-seg-btn i{ margin-right:4px; }
+  .mn-seg-ind{
+    position:absolute; z-index:0; border-radius:12px; background:#fff;
+    box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04);
+    transition:left .45s var(--resorte), top .45s var(--resorte), width .45s var(--resorte), height .45s var(--resorte);
+  }
+  .mn-doc-controles{ margin-top:22px; animation:mnEntra .45s var(--suave) both; }
+  .mn-control-num{ flex:0 1 210px; }
+  @media (max-width:560px){ .mn-control-num{ flex:1 1 100%; } }
+  .mn-excel-estado{ text-align:center; font-size:13px; margin-top:12px; }
+
+  /* pestañas como control segmentado */
+  #mnTabs.nav-tabs{
+    border:none; gap:4px; padding:5px; width:fit-content; max-width:100%;
+    margin:0 auto 14px; flex-wrap:wrap; justify-content:center;
+    background:rgba(118,118,128,.14); border-radius:16px;
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  }
+  #mnTabs .nav-link{ border:none; border-radius:12px; color:var(--mn-muted); font-weight:600; font-size:13.5px; padding:.5rem .95rem; transition:background .2s, color .2s, box-shadow .2s; }
+  #mnTabs .nav-link:hover{ color:var(--mn-ink); background:rgba(255,255,255,.5); }
+  #mnTabs .nav-link.active{ color:var(--mn-ink); background:#fff; box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04); }
+  #mnTabs + .mn-card{ border-radius:24px !important; border-top:1px solid var(--glass-borde) !important; }
 
   .mn-table-title{
-    font-family:'Poppins',sans-serif; font-weight:600; font-size:16px;
-    background:#156082; color:#fff; padding:10px 14px; border-radius:8px; margin:28px 0 16px;
+    font-family:var(--fuente-titulo); font-weight:600; font-size:15px; letter-spacing:-.005em;
+    background:linear-gradient(180deg, #1B6F96, var(--mn-blue)); color:#fff;
+    padding:11px 16px; border-radius:14px; margin:28px 0 16px;
+    box-shadow:0 6px 16px rgba(21,96,130,.20);
   }
   table.mn-table{ width:100%; border-collapse:collapse; margin-bottom:28px; }
-  table.mn-table th, table.mn-table td{
-    border:1px solid var(--mn-line); padding:9px 12px; font-size:14px; text-align:center;
-  }
+  table.mn-table th, table.mn-table td{ border:1px solid var(--mn-line); padding:9px 12px; font-size:14px; text-align:center; }
   table.mn-table thead th{ background:#FBF3F4; color:var(--mn-red-dark); }
   table.mn-table tr:last-child td{ font-weight:700; background:#FAF8F4; }
 
   .mn-file-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mn-muted); margin-bottom:6px; }
-  .mn-file-row button{ margin-left:auto; background:none; border:none; color:var(--mn-muted); font-size:13px; cursor:pointer; }
-  .mn-file-row button:hover{ color:var(--mn-red); }
+  .mn-file-row button{ margin-left:auto; background:var(--glass-fuerte); border:1px solid var(--glass-borde); border-radius:999px; padding:4px 12px; color:var(--mn-muted); font-size:12.5px; cursor:pointer; box-shadow:0 2px 8px rgba(15,23,42,.06); }
+  .mn-file-row button:hover{ color:var(--mn-red); background:#fff; }
 
-  .form-select.mn-select:focus{ border-color:var(--mn-red); box-shadow:0 0 0 .2rem rgba(200,16,46,.15); }
   #chartCard{ max-width:1150px; margin:0 auto; }
   #chartCard canvas{ max-height:1000px; }
-  .mn-chart-box{ margin-bottom:56px; border-radius:20px; overflow:hidden; }
-  .mn-chart-tiempo-box{ border-radius:32px; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .mn-chart-box{ margin-bottom:56px; border-radius:20px; overflow:hidden; box-shadow:0 10px 26px rgba(21,96,130,.18); }
+  .mn-chart-tiempo-box{ border-radius:32px; }
   .mn-chart-box canvas{ display:block; width:100%; height:auto; }
   .mn-chart-row{ display:flex; gap:32px; flex-wrap:wrap; }
-  .mn-chart-row .mn-chart-half{ flex:1 1 320px; margin-bottom:48px; }
+  .mn-chart-row .mn-chart-half{ flex:1 1 320px; margin-bottom:48px; min-width:0; }
   .mn-chart-centered{ max-width:420px; margin-left:auto; margin-right:auto; }
 
   /* tabla estilo imagen de referencia: header #156082, filas alternadas blanco/celeste */
-  .mn-img-table-wrap{ overflow-x:auto; border:1px solid #A9D4E8; border-radius:4px; }
+  .mn-img-table-wrap{ overflow-x:auto; border:1px solid #A9D4E8; border-radius:12px; background:#fff; }
   table.mn-img-table{ width:100%; border-collapse:collapse; font-size:13px; }
-  table.mn-img-table th{
-    background:#156082; color:#fff; font-weight:700; text-align:left;
-    padding:8px 12px; border:1px solid #A9D4E8;
-  }
-  table.mn-img-table th.mn-num-col, table.mn-img-table td.mn-num-col{ text-align:right; }
+  table.mn-img-table th{ background:#156082; color:#fff; font-weight:700; text-align:left; padding:8px 12px; border:1px solid #A9D4E8; }
+  table.mn-img-table th.mn-num-col, table.mn-img-table td.mn-num-col{ text-align:right; font-variant-numeric:tabular-nums; }
   table.mn-img-table td{ padding:6px 12px; border:1px solid #A9D4E8; color:#1a1a1a; }
   table.mn-img-table tr:nth-child(odd) td{ background:#C0E6F5; }
   table.mn-img-table tr:nth-child(even) td{ background:#FFFFFF; }
   #tab100 table.mn-img-table tr:last-child td,
   #tabPct table.mn-img-table tr:last-child td{ font-weight:700; }
 
-  .mn-anexo-box{ border:1px solid var(--mn-line); border-radius:10px; padding:20px; }
+  /* documentos del informe: casillas centradas */
+  .mn-doc-slots{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:14px;
+    max-width:720px; margin:18px auto 0;          /* 3 casillas por fila, todas centradas */
+  }
+  .mn-doc-slot{
+    flex:1 1 200px; max-width:220px;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;
+    border:1px solid var(--glass-borde); border-radius:18px; padding:16px 14px; font-size:13px;
+    background:var(--glass-fuerte);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    box-shadow:0 6px 18px rgba(15,23,42,.07);
+    transition:transform .2s ease, box-shadow .2s ease;
+    min-width:0;
+  }
+  @media (max-width:560px){ .mn-doc-slot{ flex-basis:140px; } }   /* celular: 2 por fila */
+  .mn-doc-slot:hover{ transform:translateY(-2px); box-shadow:0 12px 26px rgba(15,23,42,.11); }
+  .mn-doc-slot.ok{ background:linear-gradient(180deg, rgba(240,250,244,.92), rgba(255,255,255,.85)); border-color:rgba(30,123,69,.25); }
+  .mn-doc-slot .mn-doc-name{ font-weight:600; display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--mn-ink); }
+  .mn-doc-slot .mn-doc-name i{ font-size:22px; }
+  .mn-doc-slot .mn-doc-file{ color:var(--mn-muted); overflow-wrap:anywhere; margin-top:4px; }
+  .mn-doc-slot button{ background:rgba(118,118,128,.12); border:none; border-radius:999px; color:var(--mn-muted); font-size:12px; padding:3px 12px; margin-top:8px; cursor:pointer; }
+  .mn-doc-slot button:hover{ color:var(--mn-red); background:rgba(200,16,46,.10); }
+  .mn-doc-slot img{ display:block; margin-left:auto !important; margin-right:auto !important; }
+
+  table.mn-prev-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.mn-prev-table th{ background:#156082; color:#fff; padding:8px 10px; text-align:left; border:1px solid #A9D4E8; }
+  table.mn-prev-table td{ padding:8px 10px; border:1px solid #A9D4E8; vertical-align:top; background:#fff; }
+  table.mn-prev-table td.antes{ color:#8a8a8a; text-decoration:line-through; text-decoration-color:#d7a1a9; }
+  table.mn-prev-table ul{ margin:0; padding-left:18px; }
+  ul.mn-checklist{
+    list-style:none; padding:14px 16px; margin:0 0 16px; border-radius:16px;
+    background:var(--glass-fuerte); border:1px solid var(--glass-borde);
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:8px 24px; font-size:13.5px;
+  }
+  /* columnas de ancho fijo centradas en la tarjeta; dentro, texto a la izquierda (checks alineados) */
+  ul.mn-checklist{ grid-template-columns:repeat(auto-fit, minmax(240px, 310px)) !important; justify-content:center; }
+  ul.mn-checklist li{ display:flex; gap:8px; align-items:baseline; text-align:left; min-width:0; }
+  /* resultado del informe: botón, datos y vista previa centrados */
+  .mn-resultado-acciones{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; margin:6px 0 4px; }
+  .mn-thumbs{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+  .mn-thumbs figure{ margin:0; }
+  .mn-thumbs img{ width:100%; max-height:130px; object-fit:contain; border:1px solid #A9D4E8; border-radius:8px; background:#fff; }
+  .mn-thumbs figcaption{ font-size:11px; color:var(--mn-muted); margin-top:3px; }
+
+  .mn-anexo-box{ border:1px solid var(--glass-borde); background:var(--glass-fuerte); border-radius:18px; padding:20px; }
   .mn-compact-wrap{ max-width:620px; margin:0 auto; }
   .mn-compact-wrap .mn-table-title{ font-size:12px; padding:6px 10px; }
-  .mn-compact-wrap table.mn-table th, .mn-compact-wrap table.mn-table td{
-    padding:4px 8px; font-size:11.5px;
+  .mn-compact-wrap table.mn-table th, .mn-compact-wrap table.mn-table td{ padding:4px 8px; font-size:11.5px; }
+
+  /* botón flotante de descarga (aparece al procesar el informe) */
+  .mn-fab{
+    position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom, 0px)); z-index:60;
+    transform:translateX(-50%);
+    display:flex; align-items:center; gap:10px; padding:8px 8px 8px 18px; border-radius:999px;
+    background:rgba(255,255,255,.72);
+    -webkit-backdrop-filter:saturate(180%) blur(22px); backdrop-filter:saturate(180%) blur(22px);
+    border:1px solid var(--glass-borde);
+    box-shadow:0 18px 40px rgba(15,23,42,.18), 0 2px 8px rgba(15,23,42,.08);
+    font-size:13px; color:var(--mn-muted); max-width:calc(100% - 32px);
+    animation:mnSube .35s ease both;
+  }
+  .mn-fab .btn{ white-space:nowrap; }
+  .mn-fab span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  @keyframes mnSube{ from{ opacity:0; transform:translate(-50%, 16px); } to{ opacity:1; transform:translate(-50%, 0); } }
+  @media (max-width:560px){ .mn-fab span{ display:none; } .mn-fab{ padding:8px; } }
+
+  /* ================= ANIMACIONES estilo macOS =================
+     Curvas "resorte": rápidas al inicio y con un leve rebote al final.
+     Todo se desactiva si el sistema pide reducir movimiento (más abajo). */
+  :root{
+    --resorte:cubic-bezier(.34,1.56,.64,1);     /* con rebote suave */
+    --suave:cubic-bezier(.2,.8,.2,1);           /* desaceleración tipo macOS */
+  }
+  /* entrada de la página: tarjetas aparecen subiendo, una tras otra */
+  @keyframes mnEntra{ from{ opacity:0; transform:translateY(18px) scale(.985); } to{ opacity:1; transform:none; } }
+  .mn-container > .mn-card{ animation:mnEntra .7s var(--suave) both; }
+  .mn-container > .mn-card:nth-child(2){ animation-delay:.08s; }
+  .mn-container > .mn-card:nth-child(3){ animation-delay:.16s; }
+  .mn-header{ animation:mnBaja .6s var(--suave) both; }
+  @keyframes mnBaja{ from{ opacity:0; transform:translateY(-12px); } to{ opacity:1; transform:none; } }
+
+  /* cabecera compacta al hacer scroll */
+  .mn-header{ transition:padding .35s var(--suave), box-shadow .35s var(--suave), background .35s; }
+  .mn-header .mn-title, .mn-header .mn-logo, .mn-header .mn-eyebrow{ transition:font-size .35s var(--suave), height .35s var(--suave), opacity .3s, margin .3s; }
+  .mn-header.compacta{ padding-top:8px; padding-bottom:8px; box-shadow:0 8px 24px rgba(15,23,42,.08); }
+  .mn-header.compacta .mn-title{ font-size:clamp(16px,2vw,20px); }
+  .mn-header.compacta .mn-logo{ height:34px; }
+  .mn-header.compacta .mn-eyebrow{ opacity:0; font-size:0; margin:0; }
+
+  /* tarjetas y casillas: se elevan con resorte */
+  .mn-card{ transition:box-shadow .4s var(--suave), transform .4s var(--suave); }
+  .mn-doc-slot, .mn-drop, .btn, .mn-fab, .mn-file-row button{ transition-timing-function:var(--resorte) !important; transition-duration:.35s !important; }
+  .mn-doc-slot:hover{ transform:translateY(-4px) scale(1.015); }
+
+  /* casilla que acaba de recibir un archivo: "pop" y el check aparece girando */
+  @keyframes mnPop{ 0%{ transform:scale(.9); } 55%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
+  @keyframes mnCheck{ from{ transform:scale(0) rotate(-90deg); opacity:0; } to{ transform:none; opacity:1; } }
+  .mn-doc-slot.recien{ animation:mnPop .55s var(--resorte); }
+  .mn-doc-slot.recien .mn-doc-name i{ animation:mnCheck .5s var(--resorte) .1s both; }
+  @keyframes mnSacude{ 0%,100%{ transform:none; } 25%{ transform:translateX(-6px); } 50%{ transform:translateX(5px); } 75%{ transform:translateX(-3px); } }
+  .mn-sacude{ animation:mnSacude .45s var(--suave); }
+
+  /* zona de carga: el ícono "respira" al pasar el mouse y salta al arrastrar */
+  @keyframes mnFlota{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+  .mn-drop:hover i{ animation:mnFlota 1.4s ease-in-out infinite; }
+  .mn-drop.over{ transform:scale(1.015); box-shadow:0 0 0 6px rgba(200,16,46,.10), var(--sombra-flota); }
+  .mn-drop.over i{ animation:mnFlota .7s ease-in-out infinite; }
+
+  /* botón principal: brillo que cruza al pasar el mouse */
+  .btn-mn{ position:relative; overflow:hidden; }
+  .btn-mn::after{
+    content:""; position:absolute; top:0; bottom:0; left:-60%; width:50%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent);
+    transform:skewX(-20deg); opacity:0;
+  }
+  .btn-mn:hover::after{ animation:mnBrillo .9s var(--suave); }
+  @keyframes mnBrillo{ from{ left:-60%; opacity:1; } to{ left:130%; opacity:0; } }
+  /* estado "procesando" */
+  .btn-mn.cargando{ pointer-events:none; opacity:.92; }
+  .btn-mn .mn-spin{ display:inline-block; width:1em; height:1em; border:2px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%; vertical-align:-.15em; animation:mnGira .8s linear infinite; }
+  @keyframes mnGira{ to{ transform:rotate(360deg); } }
+
+  /* pestañas: indicador blanco que se desliza (como el control segmentado de macOS) */
+  #mnTabs.nav-tabs{ position:relative; }
+  #mnTabs .mn-tab-indicador{
+    position:absolute; z-index:0; border-radius:12px; background:#fff;
+    box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04);
+    transition:left .45s var(--resorte), top .45s var(--resorte), width .45s var(--resorte), height .45s var(--resorte);
+    pointer-events:none;
+  }
+  #mnTabs.con-indicador .nav-link.active{ background:transparent; box-shadow:none; }
+  #mnTabs .nav-item{ position:relative; z-index:1; }
+  /* contenido de pestaña: aparece con fundido y leve subida */
+  @keyframes mnPanel{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  .mn-tabpane.entrando{ animation:mnPanel .45s var(--suave); }
+  .mn-tabpane.entrando .mn-chart-box{ animation:mnEntra .6s var(--suave) both; }
+  .mn-tabpane.entrando .mn-chart-box:nth-child(2){ animation-delay:.06s; }
+  .mn-tabpane.entrando .mn-chart-box:nth-child(3){ animation-delay:.12s; }
+
+  /* resultados, validación y lista de chequeo: entran escalonados */
+  #resultsSection.entrando{ animation:mnEntra .6s var(--suave) both; }
+  .mn-validation, .mn-missing, #docsMsg > div, .mn-excel-estado > span{ animation:mnEntra .45s var(--suave) both; }
+  #informePreview.entrando > *, #confPreview.entrando > *, #elevaPreview.entrando > *{ animation:mnEntra .5s var(--suave) both; }
+  ul.mn-checklist li{ animation:mnEntra .45s var(--suave) both; animation-delay:calc(var(--i, 0) * 45ms); }
+
+  /* vista previa: se despliega suavemente */
+  .mn-desplegable{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .5s var(--suave), opacity .4s; opacity:0; }
+  .mn-desplegable.abierto{ grid-template-rows:1fr; opacity:1; }
+  .mn-desplegable > div{ overflow:hidden; min-height:0; }
+  #btnVerCambios i{ display:inline-block; transition:transform .4s var(--resorte); }
+  #btnVerCambios[aria-expanded="true"] i{ transform:rotate(180deg) scale(1.1); }
+
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{ animation:none !important; transition:none !important; }
+  }
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .mn-card, .mn-header, .mn-fab{ background:rgba(255,255,255,.95); }
   }
 </style>
 </head>
@@ -137,8 +381,8 @@
     <p class="mn-eyebrow">Muestreo y validación de tickets</p>
     <h1 class="mn-title">VALIDADOR DE TICKETS PARA ENTREGABLE</h1>
   </div>
-  <img class="mn-logo" alt="Logo Ministerio de Educación del Perú"
-       src="https://vectorseek.com/wp-content/uploads/2023/09/Ministerio-De-Educacion-Del-Peru.-Logo-Vector.svg-.png">
+  <!-- logo.png va en la misma carpeta que index.html dentro del repositorio -->
+  <img class="mn-logo" alt="Logo Ministerio de Educación del Perú" src="logo.png">
 </div>
 
 <div class="mn-container">
@@ -174,6 +418,115 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Documentos del informe (TdR, OS y Word) — lógica en informe.js -->
+  <div class="mn-card" id="docsCard">
+    <p class="mn-table-title" style="margin-top:0;">DOCUMENTOS</p>
+    <!-- pestañas de documentos: comparten TdR y OS; cada una genera su Word -->
+    <div class="mn-seg" id="docTabs" role="tablist">
+      <span class="mn-seg-ind" aria-hidden="true"></span>
+      <button class="mn-seg-btn active" data-dtab="ent" role="tab"><i class="bi bi-journal-richtext"></i> Entregable</button>
+      <button class="mn-seg-btn" data-dtab="conf" role="tab"><i class="bi bi-patch-check"></i> Informe de Conformidad</button>
+      <button class="mn-seg-btn" data-dtab="eleva" role="tab"><i class="bi bi-send-check"></i> Eleva Producto</button>
+    </div>
+    <p id="docsAyuda" class="text-muted small mb-3 text-center"></p>
+
+    <div id="dropZoneDocs" class="mn-drop" style="padding:28px 20px;">
+      <i class="bi bi-files"></i>
+      <p><strong>Arrastra aquí todos los archivos</strong> o haz clic para elegirlos</p>
+      <p style="font-size:12px;">Formatos válidos: .xlsx, .pdf, .docx, .png, .jpg</p>
+      <input id="docsInput" type="file" accept=".xlsx,.xls,.pdf,.docx,.png,.jpg,.jpeg,.webp" multiple style="display:none;">
+    </div>
+
+    <div id="docsExcelEstado" class="mn-excel-estado" data-solo="ent"></div>
+    <div id="docSlots" class="mn-doc-slots"></div>
+    <!-- enlace del manual: aparece al subir el manual del mes -->
+    <div id="manualEnlace" class="mn-manual-enlace" data-solo="ent" style="display:none;">
+      <p class="mn-manual-enlace-titulo"><i class="bi bi-link-45deg"></i> Enlace del manual del mes</p>
+      <div class="mn-manual-enlace-campos">
+        <div>
+          <label class="form-label small text-muted mb-1" for="manualUrl">Dirección (link) del manual</label>
+          <input id="manualUrl" type="url" class="form-control mn-input" placeholder="https://mineduperu-my.sharepoint.com/…" autocomplete="off">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="manualTexto">Texto que se verá en el informe</label>
+          <input id="manualTexto" type="text" class="form-control mn-input" placeholder="🛠 MANUAL PARA …">
+        </div>
+      </div>
+      <p class="small text-muted mb-0 mt-2">Se coloca como hipervínculo debajo de "Link de acceso al manual – Mes de …".</p>
+    </div>
+    <div id="docsMsg"></div>
+
+    <div id="docsControls" data-solo="ent" style="display:none; margin-top:22px;">
+      <!-- fila 1: listas centradas -->
+      <div class="mn-controles-listas">
+        <div class="mn-control mn-control-pct">
+          <label class="form-label small text-muted mb-1" for="pctInforme">Porcentaje</label>
+          <select id="pctInforme" class="form-select mn-select"></select>
+        </div>
+        <div class="mn-control mn-control-cuota">
+          <label class="form-label small text-muted mb-1" for="cuotaSelect">Entregable (según las cuotas de la Orden de Servicio)</label>
+          <select id="cuotaSelect" class="form-select mn-select"></select>
+        </div>
+      </div>
+      <div id="cuotaHint" class="small text-muted mt-2 text-center"></div>
+      <!-- fila 2: botón centrado -->
+      <div class="text-center mt-3">
+        <button id="btnProcesarInforme" class="btn btn-mn px-5 py-2">
+          <i class="bi bi-file-earmark-word-fill"></i> PROCESAR INFORME
+        </button>
+        <div class="small text-muted mt-2">También genera los cuadros y gráficos con el % elegido.</div>
+      </div>
+    </div>
+
+    <div id="informePreview" data-solo="ent" style="display:none; margin-top:24px;"></div>
+
+    <!-- Informe de Conformidad -->
+    <div id="confControls" class="mn-doc-controles" data-solo="conf" style="display:none;">
+      <div class="mn-controles-listas">
+        <div class="mn-control mn-control-num">
+          <label class="form-label small text-muted mb-1" for="numTecnico">N.º Informe Técnico</label>
+          <input id="numTecnico" class="form-control mn-input" inputmode="numeric" placeholder="0003">
+        </div>
+        <div class="mn-control mn-control-num">
+          <label class="form-label small text-muted mb-1" for="numServConf">N.º Informe de Servicio (referencia)</label>
+          <input id="numServConf" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
+        </div>
+        <div class="mn-control mn-control-num">
+          <label class="form-label small text-muted mb-1" for="fechaConf">Fecha</label>
+          <input id="fechaConf" type="date" class="form-control mn-input">
+        </div>
+      </div>
+      <div class="small text-muted mt-2 text-center"><i class="bi bi-lightbulb"></i> Los números se sugieren como el siguiente al del Word subido. Puedes cambiarlos.</div>
+      <div class="text-center mt-3">
+        <button id="btnConf" class="btn btn-mn px-5 py-2"><i class="bi bi-file-earmark-word-fill"></i> GENERAR INFORME DE CONFORMIDAD</button>
+      </div>
+    </div>
+    <div id="confPreview" data-solo="conf" style="display:none; margin-top:24px;"></div>
+
+    <!-- Eleva Producto -->
+    <div id="elevaControls" class="mn-doc-controles" data-solo="eleva" style="display:none;">
+      <div class="mn-controles-listas">
+        <div class="mn-control mn-control-cuota">
+          <label class="form-label small text-muted mb-1" for="cuotaEleva">Entregable (según las cuotas de la Orden de Servicio)</label>
+          <select id="cuotaEleva" class="form-select mn-select"></select>
+        </div>
+        <div class="mn-control mn-control-num">
+          <label class="form-label small text-muted mb-1" for="numServEleva">N.º Informe de Servicio</label>
+          <input id="numServEleva" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
+        </div>
+        <div class="mn-control mn-control-num">
+          <label class="form-label small text-muted mb-1" for="fechaEleva">Fecha</label>
+          <input id="fechaEleva" type="date" class="form-control mn-input">
+        </div>
+      </div>
+      <div class="small text-muted mt-2 text-center"><i class="bi bi-lightbulb"></i> El N.º de Informe de Servicio es el mismo en ambos documentos (se sincroniza).</div>
+      <div class="text-center mt-3">
+        <button id="btnEleva" class="btn btn-mn px-5 py-2"><i class="bi bi-file-earmark-word-fill"></i> GENERAR ELEVA PRODUCTO</button>
+      </div>
+    </div>
+    <div id="elevaPreview" data-solo="eleva" style="display:none; margin-top:24px;"></div>
   </div>
 
   <!-- Resultados -->
@@ -240,6 +593,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
 const REQUIRED_COLUMNS = ["Título","Estado","Categoría","Tipo","Estadísticas - Hora de resolución","ID","Asignado a - Técnico","Tiempo para resolver excedido"];
@@ -300,6 +655,7 @@ function resetAll(){
   generateControls.style.display = 'none';
   resultsSection.style.display = 'none';
   excelInput.value = '';
+  if(window.informeActualizarSugerencia) window.informeActualizarSugerencia();
 }
 
 function handleFile(file){
@@ -334,14 +690,52 @@ function handleFile(file){
         return;
       }
 
-      excelRows = json;
+      // LIMPIEZA: se descartan las filas cuyo "ID" no es un número.
+      // Ocurre cuando GLPI exporta una descripción muy larga (cadena de correos)
+      // y el texto se "desborda" a la fila siguiente, creando una fila basura.
+      const esIdValido = r => /^\d+$/.test(String(r['ID']).trim());
+      const validRows = json.filter(esIdValido);
+
+      // detalle de cada fila descartada: número de fila en el Excel (SheetJS guarda
+      // en __rowNum__ la posición real, empezando en 0) y el último ticket válido
+      // anterior, que normalmente es el ticket cuya descripción se desbordó.
+      const filasDescartadas = [];
+      let ultimoIdValido = null;
+      json.forEach(r => {
+        if(esIdValido(r)){ ultimoIdValido = String(r['ID']).trim(); return; }
+        filasDescartadas.push({ filaExcel: r.__rowNum__ + 1, ticketAnterior: ultimoIdValido });
+      });
+      const descartadas = filasDescartadas.length;
+
+      if(!validRows.length){
+        showValidation(false, 'El archivo no contiene tickets válidos (ningún ID numérico)');
+        return;
+      }
+
+      excelRows = validRows;
       excelColumns = cols;
       showValidation(true, 'Archivo validado');
+      if(descartadas){
+        const detalle = filasDescartadas.map(f =>
+          `<li>Fila <strong>${f.filaExcel}</strong> del Excel` +
+          (f.ticketAnterior ? ` — viene después del ticket <strong>${f.ticketAnterior}</strong> (revisar su descripción)` : '') +
+          `</li>`
+        ).join('');
+        validationBox.innerHTML += `
+          <div class="mn-missing" style="color:#9A6700;">
+            <i class="bi bi-exclamation-triangle"></i>
+            Se ${descartadas === 1 ? 'descartó <strong>1 fila</strong>' : `descartaron <strong>${descartadas} filas</strong>`}
+            porque el "ID" no es un número:
+            <ul style="margin:4px 0 0; padding-left:20px;">${detalle}</ul>
+          </div>`;
+      }
 
       fileRow.style.display = 'flex';
-      fileRowText.textContent = `${file.name} · ${json.length} filas`;
+      fileRowText.textContent = `${file.name} · ${validRows.length} tickets válidos`;
       dropZone.style.display = 'none';
       generateControls.style.display = 'block';
+      // avisa a la sección del informe que hay fechas de tickets para sugerir el entregable
+      if(window.informeActualizarSugerencia) window.informeActualizarSugerencia();
 
     }catch(err){
       showValidation(false, 'No se pudo leer el archivo. Verifica que sea un Excel válido');
@@ -537,6 +931,7 @@ function renderPareto(){
     },
     options: {
       responsive: true,
+      devicePixelRatio: ESCALA_GRAFICOS,   // alta resolución (ver canvasHD)
       interaction: { mode: 'index', intersect: false },
       plugins: {
         customCanvasBackgroundColor: { color: '#156082' },
@@ -599,14 +994,29 @@ function shadeColor(hex, percent){
   ).toString(16).slice(1);
 }
 
+// ---------- Gráficos en alta resolución ----------
+// Cada gráfico se dibuja al doble de píxeles (ESCALA_GRAFICOS) pero se muestra al mismo tamaño.
+// Así se ven nítidos en pantalla y al insertarlos en el Word e imprimir.
+// W y H son el tamaño "lógico" (el de los atributos width/height del <canvas> en el HTML).
+const ESCALA_GRAFICOS = 2;
+function canvasHD(canvas, w, h){
+  if(!canvas.dataset.w){ canvas.dataset.w = canvas.getAttribute('width') || 900; canvas.dataset.h = canvas.getAttribute('height') || 400; }
+  const W = w || Number(canvas.dataset.w), H = h || Number(canvas.dataset.h);
+  canvas.width = W * ESCALA_GRAFICOS;
+  canvas.height = H * ESCALA_GRAFICOS;
+  canvas.style.aspectRatio = `${W} / ${H}`;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(ESCALA_GRAFICOS, 0, 0, ESCALA_GRAFICOS, 0, 0);
+  return { ctx, W, H };
+}
+
 function draw3DBarChart(canvas, opts){
   const {
     title, categories, values,
     barColor = '#46D55A', valueColor = '#FFFF00', gridColor = '#E77032',
     bgColor = '#156082', labelColor = '#FFFFFF', showValues = true, rotateLabels = false
   } = opts;
-  const W = canvas.width, H = canvas.height;
-  const ctx = canvas.getContext('2d');
+  const { ctx, W, H } = canvasHD(canvas);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, W, H);
@@ -744,8 +1154,7 @@ function drawLegend(ctx, cx, bottomY, labels, colors, maxWidth, labelColor){
 
 function draw3DPieChart(canvas, opts){
   const { title, labels, values, colors, bgColor = '#156082', strokeColor = '#E77032', valueColor = '#FFFF00', labelColor = '#FFFFFF' } = opts;
-  const W = canvas.width, H = canvas.height;
-  const ctx = canvas.getContext('2d');
+  const { ctx, W, H } = canvasHD(canvas);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, W, H);
@@ -928,11 +1337,9 @@ function draw3DBarChartHorizontal(canvas, opts){
   const marginLeft = marginLeftBase + labelAreaWidth;
   const depthX = 14, depthY = -10;
 
-  const W = canvas.width || 900;
+  const W = Number(canvas.dataset.w || canvas.getAttribute('width') || 900);
   const H = marginTop + marginBottom + n * rowH + Math.abs(depthY) + 20;
-  canvas.height = H;
-
-  const ctx = canvas.getContext('2d');
+  const { ctx } = canvasHD(canvas, W, H);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, W, H);
@@ -1072,11 +1479,23 @@ async function generarAnexoExcel(rows, filename){
 
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  await descargarArchivo(blob, filename);
+}
+
+// descarga un archivo generado. Dentro de Claude (vista previa) usa el permiso de
+// descargas de Claude; en GitHub Pages o abierto directo, la descarga normal del navegador.
+async function descargarArchivo(blob, filename){
+  try{
+    const dl = window.claude && await window.claude.use('downloads');
+    if(dl){ await dl.save({ filename, data: blob }); return; }
+  }catch(e){
+    if(e && e.code === 'declined') return; // el usuario canceló
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function initAnexos(){
@@ -1122,10 +1541,13 @@ function parseHorasResolucion(v){
   }
   const hMatch = s.match(/(\d+(\.\d+)?)\s*h(oras?)?/i);
   const mMatch = s.match(/(\d+(\.\d+)?)\s*m(in(utos?)?)?/i);
-  if(hMatch || mMatch || dias){
+  // GLPI también exporta "23 segundos" o "0 segundos": se convierten a fracción de hora
+  const sMatch = s.match(/(\d+(\.\d+)?)\s*seg(undos?)?/i);
+  if(hMatch || mMatch || sMatch || dias){
     let total = dias*24;
     if(hMatch) total += parseFloat(hMatch[1]);
     if(mMatch) total += parseFloat(mMatch[1])/60;
+    if(sMatch) total += parseFloat(sMatch[1])/3600;
     return total;
   }
   const num = parseFloat(s.replace(',', '.'));
@@ -1154,7 +1576,10 @@ document.getElementById('btnGenerate').addEventListener('click', () => {
   renderGraficos100();
   renderTablasGraficosPct();
   initAnexos();
+  const yaVisible = resultsSection.style.display === 'block';
   resultsSection.style.display = 'block';
+  if(!yaVisible){ resultsSection.classList.remove('entrando'); void resultsSection.offsetWidth; resultsSection.classList.add('entrando'); }
+  requestAnimationFrame(moverIndicador);
 });
 
 percentSelect.addEventListener('change', () => {
@@ -1165,14 +1590,42 @@ percentSelect.addEventListener('change', () => {
   }
 });
 
+// ---------- Pestañas (con indicador que se desliza, estilo macOS) ----------
+const mnTabs = document.getElementById('mnTabs');
+const tabIndicador = document.createElement('div');
+tabIndicador.className = 'mn-tab-indicador';
+mnTabs.prepend(tabIndicador);
+mnTabs.classList.add('con-indicador');
+function moverIndicador(){
+  const act = mnTabs.querySelector('.nav-link.active');
+  if(!act || !act.offsetWidth) return;
+  // posición de la pestaña activa medida respecto a la barra de pestañas
+  const a = act.getBoundingClientRect(), t = mnTabs.getBoundingClientRect();
+  tabIndicador.style.left = (a.left - t.left - mnTabs.clientLeft) + 'px';
+  tabIndicador.style.top = (a.top - t.top - mnTabs.clientTop) + 'px';
+  tabIndicador.style.width = a.width + 'px';
+  tabIndicador.style.height = a.height + 'px';
+}
+window.addEventListener('resize', moverIndicador);
+
 document.querySelectorAll('#mnTabs .nav-link').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#mnTabs .nav-link').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.mn-tabpane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.mn-tabpane').forEach(p => { p.style.display = 'none'; p.classList.remove('entrando'); });
     btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).style.display = 'block';
+    const panel = document.getElementById(btn.dataset.tab);
+    panel.style.display = 'block';
+    void panel.offsetWidth;            // reinicia la animación
+    panel.classList.add('entrando');
+    moverIndicador();
   });
 });
+
+// ---------- Cabecera compacta al hacer scroll ----------
+const mnHeader = document.querySelector('.mn-header');
+window.addEventListener('scroll', () => mnHeader.classList.toggle('compacta', window.scrollY > 40), { passive: true });
 </script>
+<!-- lógica del informe Word (TdR + OS + Word) -->
+<script src="informe.js"></script>
 </body>
 </html>
