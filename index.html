@@ -5,9 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Validador de Tickets para Entregable - MINEDU</title>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- librerías incluidas en la carpeta libs/ (funcionan aunque la red bloquee sitios externos) -->
+<link href="libs/bootstrap.min.css" rel="stylesheet">
+<script>
+  /* Tema claro/oscuro.
+     - Por defecto sigue la configuración de Windows/Mac.
+     - Si se usa el interruptor (sol/luna), la elección se recuerda en este navegador.
+     data-theme lo usan los estilos de la página y data-bs-theme los de Bootstrap. */
+  (function(){
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const leer = () => { try{ return localStorage.getItem('mn-tema'); }catch(e){ return null; } };
+    const aplicar = t => {
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.setAttribute('data-bs-theme', t);
+      document.dispatchEvent(new CustomEvent('mn-tema', { detail: t }));
+    };
+    aplicar(leer() || (mq.matches ? 'dark' : 'light'));
+    const alCambiarSistema = e => { if(!leer()) aplicar(e.matches ? 'dark' : 'light'); };
+    mq.addEventListener ? mq.addEventListener('change', alCambiarSistema) : mq.addListener(alCambiarSistema);
+    window.mnTema = {
+      actual: () => document.documentElement.getAttribute('data-theme'),
+      elegir: t => { try{ localStorage.setItem('mn-tema', t); }catch(e){} aplicar(t); }
+    };
+  })();
+</script>
+<link href="libs/bootstrap-icons.min.css" rel="stylesheet">
 
 <style>
   /* Diseño "vidrio" estilo Apple: fondo con color suave, tarjetas translúcidas con desenfoque,
@@ -21,11 +43,14 @@
     --mn-muted:#6E6E73;
     --mn-ok:#1E7B45;
     --mn-warn:#9A6700;
-    --mn-bg:#EEF1F5;
+    --mn-bg:#F2F2F7;                         /* gris de fondo de macOS */
     --mn-line:rgba(15,23,42,.10);
     --glass:rgba(255,255,255,.62);
     --glass-fuerte:rgba(255,255,255,.80);
     --glass-borde:rgba(255,255,255,.85);
+    --superficie:#fff;                       /* fondo de controles activos (pestañas, botones claros) */
+    --barra:rgba(255,255,255,.66);           /* barra superior y botón flotante */
+    --slot-ok:linear-gradient(180deg, rgba(240,250,244,.92), rgba(255,255,255,.85));
     --sombra-flota:0 10px 30px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
     --fuente:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
     --fuente-titulo:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
@@ -48,7 +73,7 @@
   /* barra superior de vidrio, fija al hacer scroll */
   .mn-header{
     position:sticky; top:0; z-index:50;
-    background:rgba(255,255,255,.66);
+    background:var(--barra);
     -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
     border-bottom:1px solid rgba(15,23,42,.08);
     box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
@@ -86,12 +111,12 @@
     background:var(--glass-fuerte);
     transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
   }
-  .mn-drop:hover, .mn-drop.over{ border-color:var(--mn-red); background:#fff; transform:translateY(-2px); box-shadow:var(--sombra-flota); }
+  .mn-drop:hover, .mn-drop.over{ border-color:var(--mn-red); background:var(--superficie); transform:translateY(-2px); box-shadow:var(--sombra-flota); }
   .mn-drop i{
     display:inline-flex; align-items:center; justify-content:center;
     width:56px; height:56px; border-radius:50%;
     font-size:26px; color:var(--mn-red);
-    background:linear-gradient(180deg, #fff, #F4F6F9);
+    background:var(--superficie);
     box-shadow:0 6px 16px rgba(200,16,46,.15), 0 0 0 1px rgba(15,23,42,.05);
   }
   .mn-drop p{ margin:12px 0 0; color:var(--mn-muted); font-size:14px; }
@@ -119,7 +144,7 @@
     -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
     box-shadow:0 4px 12px rgba(15,23,42,.08);
   }
-  .btn-outline-secondary:hover{ color:var(--mn-ink); background:#fff; border-color:#fff; transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,.12); }
+  .btn-outline-secondary:hover{ color:var(--mn-ink); background:var(--superficie); border-color:var(--glass-borde); transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,.12); }
   .btn:focus-visible{ outline:3px solid rgba(21,96,130,.35); outline-offset:2px; }
 
   /* listas desplegables */
@@ -157,13 +182,37 @@
   .mn-seg-btn.active{ color:var(--mn-ink); }
   .mn-seg-btn i{ margin-right:4px; }
   .mn-seg-ind{
-    position:absolute; z-index:0; border-radius:12px; background:#fff;
+    position:absolute; z-index:0; border-radius:12px; background:var(--superficie);
     box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04);
     transition:left .45s var(--resorte), top .45s var(--resorte), width .45s var(--resorte), height .45s var(--resorte);
   }
   .mn-doc-controles{ margin-top:22px; animation:mnEntra .45s var(--suave) both; }
   .mn-control-num{ flex:0 1 210px; }
   @media (max-width:560px){ .mn-control-num{ flex:1 1 100%; } }
+
+  /* ===== barra de pasos ===== */
+  .mn-pasos{ display:flex; align-items:center; justify-content:center; gap:10px; margin:0 auto 22px; max-width:620px; animation:mnEntra .6s var(--suave) both; }
+  .mn-paso{ display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--mn-muted); font-weight:600; font-size:14px; padding:6px 12px 6px 6px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-borde); box-shadow:0 4px 12px rgba(15,23,42,.06); transition:transform .35s var(--resorte), color .3s, background .3s; }
+  .mn-paso:hover{ transform:translateY(-2px); color:var(--mn-ink); }
+  .mn-paso-num{ width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:13px; background:rgba(118,118,128,.16); color:var(--mn-muted); transition:background .4s var(--suave), color .3s, transform .45s var(--resorte); }
+  .mn-paso.actual{ color:var(--mn-ink); }
+  .mn-paso.actual .mn-paso-num{ background:var(--mn-blue); color:#fff; transform:scale(1.08); box-shadow:0 0 0 4px rgba(21,96,130,.18); }
+  .mn-paso.hecho .mn-paso-num{ background:var(--mn-ok); color:#fff; }
+  .mn-paso.hecho .mn-paso-num::before{ content:"\2713"; }
+  .mn-paso.hecho .mn-paso-num{ font-size:0; }
+  .mn-paso.hecho .mn-paso-num::before{ font-size:14px; }
+  .mn-paso-linea{ flex:1 1 30px; max-width:80px; height:2px; border-radius:2px; background:rgba(118,118,128,.25); }
+  @media (max-width:480px){ .mn-paso-txt{ display:none; } .mn-paso{ padding:6px; } }
+  .mn-tt-num{ display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,.22); margin-right:8px; font-size:13px; }
+  section.mn-card{ scroll-margin-top:90px; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto; } }
+  .btn:disabled{ opacity:.45; pointer-events:none; }
+  .mn-excel-linea{ display:flex; flex-direction:column; align-items:center; margin-top:12px; }
+  .mn-excel-linea .mn-file-row{ margin:0; gap:10px; }
+  .mn-excel-linea .mn-validation{ margin-top:6px; font-size:14px; }
+  .mn-generar{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .mn-generar-uno{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; }
   .mn-excel-estado{ text-align:center; font-size:13px; margin-top:12px; }
 
   /* pestañas como control segmentado */
@@ -175,7 +224,7 @@
   }
   #mnTabs .nav-link{ border:none; border-radius:12px; color:var(--mn-muted); font-weight:600; font-size:13.5px; padding:.5rem .95rem; transition:background .2s, color .2s, box-shadow .2s; }
   #mnTabs .nav-link:hover{ color:var(--mn-ink); background:rgba(255,255,255,.5); }
-  #mnTabs .nav-link.active{ color:var(--mn-ink); background:#fff; box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04); }
+  #mnTabs .nav-link.active{ color:var(--mn-ink); background:var(--superficie); box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04); }
   #mnTabs + .mn-card{ border-radius:24px !important; border-top:1px solid var(--glass-borde) !important; }
 
   .mn-table-title{
@@ -191,7 +240,7 @@
 
   .mn-file-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mn-muted); margin-bottom:6px; }
   .mn-file-row button{ margin-left:auto; background:var(--glass-fuerte); border:1px solid var(--glass-borde); border-radius:999px; padding:4px 12px; color:var(--mn-muted); font-size:12.5px; cursor:pointer; box-shadow:0 2px 8px rgba(15,23,42,.06); }
-  .mn-file-row button:hover{ color:var(--mn-red); background:#fff; }
+  .mn-file-row button:hover{ color:var(--mn-red); background:var(--superficie); }
 
   #chartCard{ max-width:1150px; margin:0 auto; }
   #chartCard canvas{ max-height:1000px; }
@@ -216,7 +265,7 @@
   /* documentos del informe: casillas centradas */
   .mn-doc-slots{
     display:flex; flex-wrap:wrap; justify-content:center; gap:14px;
-    max-width:720px; margin:18px auto 0;          /* 3 casillas por fila, todas centradas */
+    max-width:960px; margin:18px auto 0;          /* 4 casillas por fila, todas centradas */
   }
   .mn-doc-slot{
     flex:1 1 200px; max-width:220px;
@@ -230,7 +279,7 @@
   }
   @media (max-width:560px){ .mn-doc-slot{ flex-basis:140px; } }   /* celular: 2 por fila */
   .mn-doc-slot:hover{ transform:translateY(-2px); box-shadow:0 12px 26px rgba(15,23,42,.11); }
-  .mn-doc-slot.ok{ background:linear-gradient(180deg, rgba(240,250,244,.92), rgba(255,255,255,.85)); border-color:rgba(30,123,69,.25); }
+  .mn-doc-slot.ok{ background:var(--slot-ok); border-color:rgba(30,123,69,.25); }
   .mn-doc-slot .mn-doc-name{ font-weight:600; display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--mn-ink); }
   .mn-doc-slot .mn-doc-name i{ font-size:22px; }
   .mn-doc-slot .mn-doc-file{ color:var(--mn-muted); overflow-wrap:anywhere; margin-top:4px; }
@@ -240,7 +289,7 @@
 
   table.mn-prev-table{ width:100%; border-collapse:collapse; font-size:13px; }
   table.mn-prev-table th{ background:#156082; color:#fff; padding:8px 10px; text-align:left; border:1px solid #A9D4E8; }
-  table.mn-prev-table td{ padding:8px 10px; border:1px solid #A9D4E8; vertical-align:top; background:#fff; }
+  table.mn-prev-table td{ padding:8px 10px; border:1px solid #A9D4E8; vertical-align:top; background:var(--superficie); color:var(--mn-ink); }
   table.mn-prev-table td.antes{ color:#8a8a8a; text-decoration:line-through; text-decoration-color:#d7a1a9; }
   table.mn-prev-table ul{ margin:0; padding-left:18px; }
   ul.mn-checklist{
@@ -268,7 +317,7 @@
     position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom, 0px)); z-index:60;
     transform:translateX(-50%);
     display:flex; align-items:center; gap:10px; padding:8px 8px 8px 18px; border-radius:999px;
-    background:rgba(255,255,255,.72);
+    background:var(--barra);
     -webkit-backdrop-filter:saturate(180%) blur(22px); backdrop-filter:saturate(180%) blur(22px);
     border:1px solid var(--glass-borde);
     box-shadow:0 18px 40px rgba(15,23,42,.18), 0 2px 8px rgba(15,23,42,.08);
@@ -339,7 +388,7 @@
   /* pestañas: indicador blanco que se desliza (como el control segmentado de macOS) */
   #mnTabs.nav-tabs{ position:relative; }
   #mnTabs .mn-tab-indicador{
-    position:absolute; z-index:0; border-radius:12px; background:#fff;
+    position:absolute; z-index:0; border-radius:12px; background:var(--superficie);
     box-shadow:0 3px 10px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04);
     transition:left .45s var(--resorte), top .45s var(--resorte), width .45s var(--resorte), height .45s var(--resorte);
     pointer-events:none;
@@ -369,6 +418,103 @@
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{ animation:none !important; transition:none !important; }
   }
+  /* ================= MODO OSCURO =================
+     Se activa solo si Windows/Mac está en modo oscuro. Las tablas y gráficos del informe
+     mantienen sus colores (azul, celeste, verde) porque son los que van al Word. */
+  :root[data-theme="dark"]{
+    --mn-ink:#F5F5F7; --mn-muted:#98989D; --mn-bg:#0B0B0F;
+    --mn-ok:#32D74B; --mn-warn:#FFD60A;
+    --mn-line:rgba(255,255,255,.10);
+    --glass:rgba(36,36,40,.62); --glass-fuerte:rgba(44,44,48,.80); --glass-borde:rgba(255,255,255,.09);
+    --superficie:#3A3A3C; --barra:rgba(24,24,28,.72);
+    --slot-ok:linear-gradient(180deg, rgba(48,209,88,.16), rgba(44,44,48,.80));
+    --sombra-flota:0 14px 34px rgba(0,0,0,.50), 0 2px 6px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(900px 500px at 8% -5%, rgba(21,96,130,.38), transparent 60%),
+      radial-gradient(800px 480px at 100% 0%, rgba(200,16,46,.20), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(70,160,213,.12), transparent 60%),
+      var(--mn-bg);
+  }
+  :root[data-theme="dark"] .mn-header{ border-bottom-color:rgba(255,255,255,.08); box-shadow:none; }
+  :root[data-theme="dark"] .mn-logo{ background:rgba(255,255,255,.94); border-radius:9px; padding:3px 7px; }   /* el escudo necesita fondo claro */
+  :root[data-theme="dark"] .mn-drop{ border-color:rgba(120,180,220,.28); }
+  :root[data-theme="dark"] .mn-drop i{ box-shadow:0 6px 16px rgba(200,16,46,.28), 0 0 0 1px rgba(255,255,255,.08); }
+  :root[data-theme="dark"] #mnTabs.nav-tabs, :root[data-theme="dark"] .mn-seg{ background:rgba(255,255,255,.08); }
+  :root[data-theme="dark"] #mnTabs .nav-link:hover{ background:rgba(255,255,255,.06); }
+  :root[data-theme="dark"] .text-muted{ color:var(--mn-muted) !important; }
+  :root[data-theme="dark"] .form-select.mn-select, :root[data-theme="dark"] .form-control.mn-input{ background-color:var(--glass-fuerte); color:var(--mn-ink); border-color:rgba(255,255,255,.14); }
+  :root[data-theme="dark"] .mn-doc-slot button, :root[data-theme="dark"] .mn-file-row button{ background:rgba(255,255,255,.08); }
+  :root[data-theme="dark"] table.mn-prev-table td.antes{ color:#8E8E93; }
+  :root[data-theme="dark"] .mn-img-table-wrap{ border-color:rgba(169,212,232,.35); }
+  :root[data-theme="dark"] .mn-paso-num{ background:rgba(255,255,255,.12); }
+  :root[data-theme="dark"] .mn-table-title{ box-shadow:0 6px 18px rgba(0,0,0,.35); }
+
+  /* ===== Interruptor de tema (sol / luna), estilo macOS ===== */
+  .mn-header-der{ display:flex; align-items:center; gap:14px; }
+  .mn-tema{
+    position:relative; width:64px; height:34px; border-radius:999px; border:1px solid var(--glass-borde);
+    background:linear-gradient(180deg, #CFE8FF, #9FD0FF); cursor:pointer; padding:0; flex:0 0 auto;
+    box-shadow:inset 0 1px 3px rgba(15,23,42,.18), 0 4px 12px rgba(15,23,42,.10);
+    transition:background .5s var(--suave), box-shadow .3s, transform .3s var(--resorte);
+    overflow:hidden;
+  }
+  .mn-tema:hover{ transform:scale(1.05); }
+  .mn-tema:active{ transform:scale(.96); }
+  .mn-tema:focus-visible{ outline:3px solid rgba(21,96,130,.40); outline-offset:3px; }
+  /* estrellas (visibles en modo oscuro) */
+  .mn-tema::before, .mn-tema::after{
+    content:""; position:absolute; width:3px; height:3px; border-radius:50%; background:#fff;
+    opacity:0; transition:opacity .4s, transform .6s var(--resorte); transform:scale(.2);
+  }
+  .mn-tema::before{ left:12px; top:9px; box-shadow:8px 9px 0 -0.5px #fff, 3px 15px 0 -1px #fff; }
+  .mn-tema::after{ left:22px; top:6px; width:2px; height:2px; }
+  .mn-tema-perilla{
+    position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+    background:linear-gradient(180deg, #FFE27A, #FFB800); color:#B26A00;
+    box-shadow:0 3px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.6);
+    transition:left .55s var(--resorte), background .5s var(--suave), color .4s, transform .55s var(--resorte);
+  }
+  .mn-tema-perilla i{ transition:transform .55s var(--resorte), opacity .25s; }
+  :root[data-theme="dark"] .mn-tema{ background:linear-gradient(180deg, #1B2340, #0E1428); box-shadow:inset 0 1px 3px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.35); }
+  :root[data-theme="dark"] .mn-tema::before, :root[data-theme="dark"] .mn-tema::after{ opacity:.9; transform:scale(1); }
+  :root[data-theme="dark"] .mn-tema-perilla{ left:33px; background:linear-gradient(180deg, #F2F2F7, #C7C7CC); color:#3A3A5C; transform:rotate(360deg); }
+  .mn-tema.girando .mn-tema-perilla i{ transform:rotate(-90deg) scale(.6); opacity:0; }
+
+  /* cambio de tema: transición suave de colores (si el navegador no soporta la circular) */
+  html.mn-cambiando-tema *, html.mn-cambiando-tema *::before, html.mn-cambiando-tema *::after{
+    transition:background-color .45s var(--suave), color .45s var(--suave), border-color .45s var(--suave), box-shadow .45s var(--suave) !important;
+  }
+  /* cambio de tema con círculo que se expande desde el interruptor (Chrome/Edge) */
+  ::view-transition-old(root), ::view-transition-new(root){ animation:none; mix-blend-mode:normal; }
+  ::view-transition-new(root){ z-index:2; }
+
+  .mn-aviso-mes{ color:var(--mn-warn); font-weight:600; }
+
+  /* ===== Detalles macOS (ambos temas) ===== */
+  ::selection{ background:rgba(21,96,130,.28); }
+  /* barras de desplazamiento finas y redondeadas */
+  *{ scrollbar-width:thin; scrollbar-color:rgba(120,120,128,.45) transparent; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(120,120,128,.40); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
+  ::-webkit-scrollbar-thumb:hover{ background-color:rgba(120,120,128,.65); }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  /* filas de tablas: se resaltan al pasar el mouse */
+  table.mn-img-table tbody tr, table.mn-prev-table tbody tr{ transition:filter .2s var(--suave); }
+  table.mn-img-table tbody tr:hover{ filter:brightness(.96); }
+  :root[data-theme="dark"] table.mn-img-table tbody tr:hover{ filter:brightness(1.08); }
+  /* tarjetas: elevación suave al pasar el mouse (como las ventanas de macOS al enfocarse) */
+  section.mn-card:hover{ box-shadow:0 16px 40px rgba(15,23,42,.12), 0 2px 8px rgba(15,23,42,.06); }
+  :root[data-theme="dark"] section.mn-card:hover{ box-shadow:0 18px 44px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4); }
+  /* casillas, entradas y listas: anillo de enfoque animado */
+  .form-control.mn-input, .form-select.mn-select{ transition:border-color .25s var(--suave), box-shadow .35s var(--resorte), background-color .3s; }
+  /* el número del paso "actual" late suavemente */
+  @keyframes mnLatido{ 0%,100%{ box-shadow:0 0 0 4px rgba(21,96,130,.18); } 50%{ box-shadow:0 0 0 8px rgba(21,96,130,.06); } }
+  .mn-paso.actual .mn-paso-num{ animation:mnLatido 2.2s ease-in-out infinite; }
+
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .mn-card, .mn-header, .mn-fab{ background:rgba(255,255,255,.95); }
   }
@@ -381,152 +527,171 @@
     <p class="mn-eyebrow">Muestreo y validación de tickets</p>
     <h1 class="mn-title">VALIDADOR DE TICKETS PARA ENTREGABLE</h1>
   </div>
-  <!-- logo.png va en la misma carpeta que index.html dentro del repositorio -->
-  <img class="mn-logo" alt="Logo Ministerio de Educación del Perú" src="logo.png">
+  <div class="mn-header-der">
+    <!-- interruptor de tema: sol = claro, luna = oscuro -->
+    <button id="mnTemaBtn" class="mn-tema" type="button" role="switch" aria-checked="false" aria-label="Modo oscuro" title="Cambiar a modo oscuro">
+      <span class="mn-tema-perilla"><i class="bi bi-sun-fill"></i></span>
+    </button>
+    <!-- logo.png va en la misma carpeta que index.html dentro del repositorio -->
+    <img class="mn-logo" alt="Logo Ministerio de Educación del Perú" src="logo.png">
+  </div>
 </div>
 
 <div class="mn-container">
 
-  <!-- Carga de archivo -->
-  <div class="mn-card">
-    <div id="fileRow" class="mn-file-row" style="display:none;">
-      <i class="bi bi-file-earmark-spreadsheet"></i>
-      <span id="fileRowText"></span>
-      <button id="btnChangeFile"><i class="bi bi-x-lg"></i> cambiar archivo</button>
-    </div>
+  <!-- Barra de pasos: ① Archivos → ② Datos → ③ Generar -->
+  <nav class="mn-pasos" id="mnPasos" aria-label="Pasos">
+    <a href="#paso1" class="mn-paso" data-paso="1"><span class="mn-paso-num">1</span><span class="mn-paso-txt">Archivos</span></a>
+    <span class="mn-paso-linea"></span>
+    <a href="#paso2" class="mn-paso" data-paso="2"><span class="mn-paso-num">2</span><span class="mn-paso-txt">Datos</span></a>
+    <span class="mn-paso-linea"></span>
+    <a href="#paso3" class="mn-paso" data-paso="3"><span class="mn-paso-num">3</span><span class="mn-paso-txt">Generar</span></a>
+  </nav>
 
+  <!-- Carga original del Excel: queda oculta; ahora el Excel se suelta en el paso 1.
+       Se mantiene porque contiene el % (percentSelect) y el botón de cuadros (btnGenerate) que usa el código. -->
+  <div class="mn-card" id="cardExcelOriginal" style="display:none;">
     <div id="dropZone" class="mn-drop">
-      <i class="bi bi-cloud-arrow-up"></i>
-      <p><strong>Arrastra tu archivo Excel aquí</strong> o haz clic para subirlo</p>
-      <p style="font-size:12px;">Formatos válidos: .xlsx, .xls</p>
       <input id="excelInput" type="file" accept=".xlsx,.xls" style="display:none;">
     </div>
-
-    <div id="validationBox"></div>
-
-    <!-- Controles: aparecen solo tras validar -->
-    <div id="generateControls" style="display:none; margin-top:20px;">
-      <div class="row g-2 align-items-end">
-        <div class="col-sm-5">
-          <label class="form-label small text-muted mb-1">Porcentaje de validación</label>
-          <select id="percentSelect" class="form-select mn-select"></select>
-        </div>
-        <div class="col-sm-7">
-          <button id="btnGenerate" class="btn btn-mn w-100 py-2">
-            <i class="bi bi-bar-chart-line-fill"></i> GENERAR CUADROS Y GRÁFICOS
-          </button>
-        </div>
-      </div>
+    <div id="generateControls" style="display:none;">
+      <select id="percentSelect" class="form-select mn-select"></select>
+      <button id="btnGenerate" class="btn btn-mn">GENERAR CUADROS Y GRÁFICOS</button>
     </div>
   </div>
 
-  <!-- Documentos del informe (TdR, OS y Word) — lógica en informe.js -->
-  <div class="mn-card" id="docsCard">
-    <p class="mn-table-title" style="margin-top:0;">DOCUMENTOS</p>
-    <!-- pestañas de documentos: comparten TdR y OS; cada una genera su Word -->
-    <div class="mn-seg" id="docTabs" role="tablist">
-      <span class="mn-seg-ind" aria-hidden="true"></span>
-      <button class="mn-seg-btn active" data-dtab="ent" role="tab"><i class="bi bi-journal-richtext"></i> Entregable</button>
-      <button class="mn-seg-btn" data-dtab="conf" role="tab"><i class="bi bi-patch-check"></i> Informe de Conformidad</button>
-      <button class="mn-seg-btn" data-dtab="eleva" role="tab"><i class="bi bi-send-check"></i> Eleva Producto</button>
-    </div>
-    <p id="docsAyuda" class="text-muted small mb-3 text-center"></p>
+  <div id="docsCard">
+    <!-- ================= PASO 1: ARCHIVOS ================= -->
+    <section class="mn-card" id="paso1">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">1</span> ARCHIVOS</p>
+      <p class="text-muted small mb-3 text-center">Suelta aquí, juntos o uno por uno: el <strong>Excel de tickets</strong>, el <strong>TdR</strong> y la
+        <strong>Orden de Servicio</strong> (PDF), los Word del <strong>Entregable</strong>, <strong>Conformidad</strong>, <strong>Eleva Producto</strong> y
+        <strong>Manual del mes</strong>, y las imágenes de la <strong>Ficha</strong> y de la <strong>Categorización</strong>
+        (el nombre debe contener "ficha" o "categorizacion"). Cada archivo se identifica automáticamente.</p>
 
-    <div id="dropZoneDocs" class="mn-drop" style="padding:28px 20px;">
-      <i class="bi bi-files"></i>
-      <p><strong>Arrastra aquí todos los archivos</strong> o haz clic para elegirlos</p>
-      <p style="font-size:12px;">Formatos válidos: .xlsx, .pdf, .docx, .png, .jpg</p>
-      <input id="docsInput" type="file" accept=".xlsx,.xls,.pdf,.docx,.png,.jpg,.jpeg,.webp" multiple style="display:none;">
-    </div>
+      <div id="dropZoneDocs" class="mn-drop" style="padding:28px 20px;">
+        <i class="bi bi-files"></i>
+        <p><strong>Arrastra aquí todos los archivos</strong> o haz clic para elegirlos</p>
+        <p style="font-size:12px;">Formatos válidos: .xlsx, .pdf, .docx, .png, .jpg</p>
+        <input id="docsInput" type="file" accept=".xlsx,.xls,.pdf,.docx,.png,.jpg,.jpeg,.webp" multiple style="display:none;">
+      </div>
 
-    <div id="docsExcelEstado" class="mn-excel-estado" data-solo="ent"></div>
-    <div id="docSlots" class="mn-doc-slots"></div>
-    <!-- enlace del manual: aparece al subir el manual del mes -->
-    <div id="manualEnlace" class="mn-manual-enlace" data-solo="ent" style="display:none;">
-      <p class="mn-manual-enlace-titulo"><i class="bi bi-link-45deg"></i> Enlace del manual del mes</p>
-      <div class="mn-manual-enlace-campos">
-        <div>
-          <label class="form-label small text-muted mb-1" for="manualUrl">Dirección (link) del manual</label>
-          <input id="manualUrl" type="url" class="form-control mn-input" placeholder="https://mineduperu-my.sharepoint.com/…" autocomplete="off">
+      <!-- Excel: validación en una línea (sin casilla) -->
+      <div class="mn-excel-linea">
+        <div id="fileRow" class="mn-file-row" style="display:none;">
+          <i class="bi bi-file-earmark-spreadsheet"></i>
+          <span id="fileRowText"></span>
+          <button id="btnChangeFile"><i class="bi bi-x-lg"></i> cambiar Excel</button>
         </div>
-        <div>
-          <label class="form-label small text-muted mb-1" for="manualTexto">Texto que se verá en el informe</label>
-          <input id="manualTexto" type="text" class="form-control mn-input" placeholder="🛠 MANUAL PARA …">
-        </div>
+        <div id="validationBox"></div>
+        <div id="docsExcelEstado" class="mn-excel-estado"></div>
       </div>
-      <p class="small text-muted mb-0 mt-2">Se coloca como hipervínculo debajo de "Link de acceso al manual – Mes de …".</p>
-    </div>
-    <div id="docsMsg"></div>
+      <div id="docSlots" class="mn-doc-slots"></div>
+      <div id="docsMsg"></div>
+    </section>
 
-    <div id="docsControls" data-solo="ent" style="display:none; margin-top:22px;">
-      <!-- fila 1: listas centradas -->
-      <div class="mn-controles-listas">
-        <div class="mn-control mn-control-pct">
-          <label class="form-label small text-muted mb-1" for="pctInforme">Porcentaje</label>
-          <select id="pctInforme" class="form-select mn-select"></select>
-        </div>
-        <div class="mn-control mn-control-cuota">
-          <label class="form-label small text-muted mb-1" for="cuotaSelect">Entregable (según las cuotas de la Orden de Servicio)</label>
-          <select id="cuotaSelect" class="form-select mn-select"></select>
-        </div>
-      </div>
-      <div id="cuotaHint" class="small text-muted mt-2 text-center"></div>
-      <!-- fila 2: botón centrado -->
-      <div class="text-center mt-3">
-        <button id="btnProcesarInforme" class="btn btn-mn px-5 py-2">
-          <i class="bi bi-file-earmark-word-fill"></i> PROCESAR INFORME
-        </button>
-        <div class="small text-muted mt-2">También genera los cuadros y gráficos con el % elegido.</div>
-      </div>
-    </div>
+    <!-- ================= PASO 2: DATOS ================= -->
+    <section class="mn-card" id="paso2">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">2</span> DATOS</p>
+      <p id="paso2Vacio" class="text-muted small text-center mb-0">Completa el paso 1 (Excel, TdR, Orden de Servicio y al menos un Word) para ver los datos.</p>
 
-    <div id="informePreview" data-solo="ent" style="display:none; margin-top:24px;"></div>
+      <div id="docsControls" style="display:none;">
+        <div class="mn-controles-listas">
+          <div class="mn-control mn-control-pct">
+            <label class="form-label small text-muted mb-1" for="pctInforme">Porcentaje</label>
+            <select id="pctInforme" class="form-select mn-select"></select>
+          </div>
+          <div class="mn-control mn-control-cuota">
+            <label class="form-label small text-muted mb-1" for="cuotaSelect">Entregable (según las cuotas de la Orden de Servicio)</label>
+            <select id="cuotaSelect" class="form-select mn-select"></select>
+          </div>
+        </div>
+        <div id="cuotaHint" class="small text-muted mt-2 text-center"></div>
+      </div>
 
-    <!-- Informe de Conformidad -->
-    <div id="confControls" class="mn-doc-controles" data-solo="conf" style="display:none;">
-      <div class="mn-controles-listas">
-        <div class="mn-control mn-control-num">
-          <label class="form-label small text-muted mb-1" for="numTecnico">N.º Informe Técnico</label>
-          <input id="numTecnico" class="form-control mn-input" inputmode="numeric" placeholder="0003">
+      <!-- enlace del manual: aparece al subir el manual del mes -->
+      <div id="manualEnlace" class="mn-manual-enlace" style="display:none;">
+        <p class="mn-manual-enlace-titulo"><i class="bi bi-link-45deg"></i> Enlace del manual del mes</p>
+        <div class="mn-manual-enlace-campos">
+          <div>
+            <label class="form-label small text-muted mb-1" for="manualUrl">Dirección (link) del manual</label>
+            <input id="manualUrl" type="url" class="form-control mn-input" placeholder="https://mineduperu-my.sharepoint.com/…" autocomplete="off">
+          </div>
+          <div>
+            <label class="form-label small text-muted mb-1" for="manualTexto">Texto que se verá en el informe</label>
+            <input id="manualTexto" type="text" class="form-control mn-input" placeholder="🛠 MANUAL PARA …">
+          </div>
         </div>
-        <div class="mn-control mn-control-num">
-          <label class="form-label small text-muted mb-1" for="numServConf">N.º Informe de Servicio (referencia)</label>
-          <input id="numServConf" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
-        </div>
-        <div class="mn-control mn-control-num">
-          <label class="form-label small text-muted mb-1" for="fechaConf">Fecha</label>
-          <input id="fechaConf" type="date" class="form-control mn-input">
-        </div>
+        <p class="small text-muted mb-0 mt-2">Se coloca como hipervínculo debajo de "Link de acceso al manual – Mes de …".</p>
       </div>
-      <div class="small text-muted mt-2 text-center"><i class="bi bi-lightbulb"></i> Los números se sugieren como el siguiente al del Word subido. Puedes cambiarlos.</div>
-      <div class="text-center mt-3">
-        <button id="btnConf" class="btn btn-mn px-5 py-2"><i class="bi bi-file-earmark-word-fill"></i> GENERAR INFORME DE CONFORMIDAD</button>
-      </div>
-    </div>
-    <div id="confPreview" data-solo="conf" style="display:none; margin-top:24px;"></div>
 
-    <!-- Eleva Producto -->
-    <div id="elevaControls" class="mn-doc-controles" data-solo="eleva" style="display:none;">
-      <div class="mn-controles-listas">
-        <div class="mn-control mn-control-cuota">
-          <label class="form-label small text-muted mb-1" for="cuotaEleva">Entregable (según las cuotas de la Orden de Servicio)</label>
-          <select id="cuotaEleva" class="form-select mn-select"></select>
-        </div>
-        <div class="mn-control mn-control-num">
-          <label class="form-label small text-muted mb-1" for="numServEleva">N.º Informe de Servicio</label>
-          <input id="numServEleva" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
-        </div>
-        <div class="mn-control mn-control-num">
-          <label class="form-label small text-muted mb-1" for="fechaEleva">Fecha</label>
-          <input id="fechaEleva" type="date" class="form-control mn-input">
+      <!-- Conformidad / Eleva Producto: aparecen si se subió su Word -->
+      <div id="confControls" class="mn-manual-enlace" style="display:none;">
+        <p class="mn-manual-enlace-titulo"><i class="bi bi-patch-check"></i> Informe de Conformidad</p>
+        <div class="mn-controles-listas">
+          <div class="mn-control mn-control-num">
+            <label class="form-label small text-muted mb-1" for="numTecnico">N.º Informe Técnico</label>
+            <input id="numTecnico" class="form-control mn-input" inputmode="numeric" placeholder="0003">
+          </div>
+          <div class="mn-control mn-control-num">
+            <label class="form-label small text-muted mb-1" for="numServConf">N.º Informe de Servicio (referencia)</label>
+            <input id="numServConf" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
+          </div>
+          <div class="mn-control mn-control-num">
+            <label class="form-label small text-muted mb-1" for="fechaConf">Fecha</label>
+            <input id="fechaConf" type="date" class="form-control mn-input">
+          </div>
         </div>
       </div>
-      <div class="small text-muted mt-2 text-center"><i class="bi bi-lightbulb"></i> El N.º de Informe de Servicio es el mismo en ambos documentos (se sincroniza).</div>
-      <div class="text-center mt-3">
-        <button id="btnEleva" class="btn btn-mn px-5 py-2"><i class="bi bi-file-earmark-word-fill"></i> GENERAR ELEVA PRODUCTO</button>
+      <div id="elevaControls" class="mn-manual-enlace" style="display:none;">
+        <p class="mn-manual-enlace-titulo"><i class="bi bi-send-check"></i> Eleva Producto</p>
+        <div class="mn-controles-listas">
+          <div class="mn-control mn-control-num">
+            <label class="form-label small text-muted mb-1" for="numServEleva">N.º Informe de Servicio</label>
+            <input id="numServEleva" class="form-control mn-input mn-num-serv" inputmode="numeric" placeholder="003">
+          </div>
+          <div class="mn-control mn-control-num">
+            <label class="form-label small text-muted mb-1" for="fechaEleva">Fecha</label>
+            <input id="fechaEleva" type="date" class="form-control mn-input">
+          </div>
+        </div>
+        <select id="cuotaEleva" class="d-none" aria-hidden="true" tabindex="-1"></select>
       </div>
-    </div>
-    <div id="elevaPreview" data-solo="eleva" style="display:none; margin-top:24px;"></div>
+      <div id="numsHint" class="small text-muted mt-2 text-center" style="display:none;"><i class="bi bi-lightbulb"></i> Los números se sugieren como el siguiente al del Word subido; el N.º de Informe de Servicio es el mismo en ambos documentos.</div>
+    </section>
+
+    <!-- ================= PASO 3: GENERAR ================= -->
+    <section class="mn-card" id="paso3">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">3</span> GENERAR</p>
+      <p id="paso3Vacio" class="text-muted small text-center mb-0">Cuando completes los pasos 1 y 2 podrás generar los documentos.</p>
+      <div id="paso3Botones" class="mn-generar" style="display:none;">
+        <button id="btnTodo" class="btn btn-mn px-5 py-2"><i class="bi bi-file-earmark-zip-fill"></i> <span>GENERAR TODOS LOS DOCUMENTOS</span></button>
+        <div class="mn-generar-uno">
+          <span class="small text-muted">o uno por uno:</span>
+          <button id="btnProcesarInforme" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-richtext"></i> Entregable</button>
+          <button id="btnConf" class="btn btn-outline-secondary btn-sm"><i class="bi bi-patch-check"></i> Conformidad</button>
+          <button id="btnEleva" class="btn btn-outline-secondary btn-sm"><i class="bi bi-send-check"></i> Eleva Producto</button>
+          <button id="btnSoloCuadros" class="btn btn-outline-secondary btn-sm"><i class="bi bi-bar-chart-line"></i> Solo cuadros y gráficos</button>
+        </div>
+        <div class="small text-muted text-center">Los cuadros y gráficos se generan siempre con el % elegido en el paso 2.</div>
+      </div>
+
+      <div id="genMsg"></div>
+      <!-- resultado del ZIP -->
+      <div id="zipResultado" class="mn-resultado-acciones" style="display:none; margin-top:18px;"></div>
+
+      <!-- resultados por documento -->
+      <div class="mn-seg" id="docTabs" role="tablist" style="display:none; margin-top:20px;">
+        <span class="mn-seg-ind" aria-hidden="true"></span>
+        <button class="mn-seg-btn active" data-dtab="ent" role="tab"><i class="bi bi-journal-richtext"></i> Entregable</button>
+        <button class="mn-seg-btn" data-dtab="conf" role="tab"><i class="bi bi-patch-check"></i> Conformidad</button>
+        <button class="mn-seg-btn" data-dtab="eleva" role="tab"><i class="bi bi-send-check"></i> Eleva Producto</button>
+      </div>
+      <p id="docsAyuda" class="d-none"></p>
+      <div id="informePreview" data-solo="ent" style="display:none; margin-top:12px;"></div>
+      <div id="confPreview" data-solo="conf" style="display:none; margin-top:12px;"></div>
+      <div id="elevaPreview" data-solo="eleva" style="display:none; margin-top:12px;"></div>
+    </section>
   </div>
 
   <!-- Resultados -->
@@ -588,13 +753,13 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="libs/bootstrap.bundle.min.js"></script>
+<script src="libs/xlsx.full.min.js"></script>
+<script src="libs/exceljs.min.js"></script>
+<script src="libs/chart.umd.min.js"></script>
+<script src="libs/chartjs-plugin-datalabels.min.js"></script>
+<script src="libs/pdf.min.js"></script>
+<script src="libs/jszip.min.js"></script>
 
 <script>
 const REQUIRED_COLUMNS = ["Título","Estado","Categoría","Tipo","Estadísticas - Hora de resolución","ID","Asignado a - Técnico","Tiempo para resolver excedido"];
@@ -722,7 +887,7 @@ function handleFile(file){
           `</li>`
         ).join('');
         validationBox.innerHTML += `
-          <div class="mn-missing" style="color:#9A6700;">
+          <div class="mn-missing" style="color:var(--mn-warn);">
             <i class="bi bi-exclamation-triangle"></i>
             Se ${descartadas === 1 ? 'descartó <strong>1 fila</strong>' : `descartaron <strong>${descartadas} filas</strong>`}
             porque el "ID" no es un número:
@@ -824,7 +989,10 @@ function seededSample(rows, size, seed=42){
   return arr.slice(0, size);
 }
 
-function pct(n, d){ return d ? ((n/d)*100).toFixed(1) : '0.0'; }
+// porcentajes enteros; en pares incidencias/solicitudes el segundo se calcula como 100 - el primero
+// para que siempre sumen 100% (mismo criterio que los textos del informe)
+function pct(n, d){ return d ? String(Math.round((n/d)*100)) : '0'; }
+function pctPar(inc, sol, total){ if(!total) return ['0', '0']; const s = Math.round(sol / total * 100); return [String(100 - s), String(s)]; }
 
 // base compartida por las pestañas 2, 5 y el Anexo al %:
 // total de tickets -> se restan los "Sí" (fuera de tiempo) -> RECIÉN AHÍ se aplica el %.
@@ -855,9 +1023,9 @@ function renderTab100(){
     <table class="mn-img-table">
       <thead><tr><th>TIPO DE SOLICITUDES</th><th>SOLICITUDES</th><th>PORCENTAJE</th></tr></thead>
       <tbody>
-        <tr><td>INCIDENCIA</td><td>${c.incidencias}</td><td>${pct(c.incidencias,c.total)}%</td></tr>
-        <tr><td>SOLICITUD</td><td>${c.solicitudes}</td><td>${pct(c.solicitudes,c.total)}%</td></tr>
-        <tr><td>TOTAL</td><td>${c.total}</td><td>100.0%</td></tr>
+        <tr><td>INCIDENCIA</td><td>${c.incidencias}</td><td>${pctPar(c.incidencias,c.solicitudes,c.total)[0]}%</td></tr>
+        <tr><td>SOLICITUD</td><td>${c.solicitudes}</td><td>${pctPar(c.incidencias,c.solicitudes,c.total)[1]}%</td></tr>
+        <tr><td>TOTAL</td><td>${c.total}</td><td>100%</td></tr>
       </tbody>
     </table>`;
 }
@@ -885,9 +1053,9 @@ function renderTabPct(){
     <table class="mn-img-table">
       <thead><tr><th>SOLICITUDES POR TIPO</th><th class="mn-num-col">TOTAL</th><th class="mn-num-col">PORCENTAJE</th></tr></thead>
       <tbody>
-        <tr><td>INCIDENCIAS</td><td class="mn-num-col">${c.incidencias}</td><td class="mn-num-col">${pct(c.incidencias,c.total)}%</td></tr>
-        <tr><td>SOLICITUDES</td><td class="mn-num-col">${c.solicitudes}</td><td class="mn-num-col">${pct(c.solicitudes,c.total)}%</td></tr>
-        <tr><td>TOTAL</td><td class="mn-num-col">${c.total}</td><td class="mn-num-col">100.0%</td></tr>
+        <tr><td>INCIDENCIAS</td><td class="mn-num-col">${c.incidencias}</td><td class="mn-num-col">${pctPar(c.incidencias,c.solicitudes,c.total)[0]}%</td></tr>
+        <tr><td>SOLICITUDES</td><td class="mn-num-col">${c.solicitudes}</td><td class="mn-num-col">${pctPar(c.incidencias,c.solicitudes,c.total)[1]}%</td></tr>
+        <tr><td>TOTAL</td><td class="mn-num-col">${c.total}</td><td class="mn-num-col">100%</td></tr>
       </tbody>
     </table>`;
 }
@@ -971,7 +1139,7 @@ function renderPareto(){
       <table class="mn-img-table">
         <thead><tr><th style="text-align:left;">CATEGORÍA</th><th class="mn-num-col">FRECUENCIA</th><th class="mn-num-col">PORCENTAJE</th><th class="mn-num-col">% ACUMULADO</th></tr></thead>
         <tbody>${rowsHtml}
-          <tr><td style="text-align:left; font-weight:700;">TOTAL</td><td class="mn-num-col" style="font-weight:700;">${totalCat}</td><td class="mn-num-col" style="font-weight:700;">100.0%</td><td></td></tr>
+          <tr><td style="text-align:left; font-weight:700;">TOTAL</td><td class="mn-num-col" style="font-weight:700;">${totalCat}</td><td class="mn-num-col" style="font-weight:700;">100%</td><td></td></tr>
         </tbody>
       </table>
     </div>`;
@@ -1619,6 +1787,41 @@ document.querySelectorAll('#mnTabs .nav-link').forEach(btn => {
     panel.classList.add('entrando');
     moverIndicador();
   });
+});
+
+// ---------- Interruptor de tema (sol / luna) ----------
+const temaBtn = document.getElementById('mnTemaBtn');
+function pintarInterruptor(){
+  const oscuro = window.mnTema.actual() === 'dark';
+  temaBtn.setAttribute('aria-checked', oscuro);
+  temaBtn.title = oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+  temaBtn.querySelector('i').className = 'bi ' + (oscuro ? 'bi-moon-stars-fill' : 'bi-sun-fill');
+}
+pintarInterruptor();
+document.addEventListener('mn-tema', pintarInterruptor);
+temaBtn.addEventListener('click', () => {
+  const nuevo = window.mnTema.actual() === 'dark' ? 'light' : 'dark';
+  const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  temaBtn.classList.add('girando');
+  setTimeout(() => temaBtn.classList.remove('girando'), 280);
+  if(document.startViewTransition && !sinMovimiento){
+    // el nuevo tema aparece como un círculo que crece desde el interruptor
+    const r = temaBtn.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const radio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    let aplicado = false;
+    const vt = document.startViewTransition(() => { aplicado = true; window.mnTema.elegir(nuevo); });
+    // respaldo: si el navegador demora la transición, el tema se aplica igual
+    setTimeout(() => { if(!aplicado) window.mnTema.elegir(nuevo); }, 350);
+    vt.ready.then(() => document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radio}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)', pseudoElement: '::view-transition-new(root)' }
+    )).catch(() => {});
+  } else {
+    document.documentElement.classList.add('mn-cambiando-tema');
+    window.mnTema.elegir(nuevo);
+    setTimeout(() => document.documentElement.classList.remove('mn-cambiando-tema'), 500);
+  }
 });
 
 // ---------- Cabecera compacta al hacer scroll ----------

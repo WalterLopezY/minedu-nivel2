@@ -464,8 +464,9 @@ const IMAGENES_INFORME = {
     reconocer: n => n.includes('FICHA')
   },
   grafica11: {
-    label: 'Categorización en GLPI (imagen "grafica 11")', titulo: /^Gr[aá]fic[ao]\s*\d+\s*:\s*Atenci[oó]n correctamente categorizada/i,
-    reconocer: n => /GRAFIC[AO]?[\s_\-.]*11\b/.test(n) || /\bG[\s_\-]*11\b/.test(n)
+    label: 'Categorización en GLPI', titulo: /^Gr[aá]fic[ao]\s*\d+\s*:\s*Atenci[oó]n correctamente categorizada/i,
+    // el nombre del archivo debe contener "categorizacion" (con o sin tilde); "grafica 11" se acepta por compatibilidad
+    reconocer: n => n.includes('CATEGORIZACION') || /GRAFIC[AO]?[\s_\-.]*11\b/.test(n)
   }
 };
 
@@ -645,9 +646,9 @@ function tablaTipoMuestra(conPorcentaje){
     return dibujarTabla(['SOLICITUDES POR TIPO', 'TOTAL'],
       [['INCIDENCIAS', c.incidencias], ['SOLICITUDES', c.solicitudes], ['TOTAL', c.total]], { total: true, anchos: [0, 260] });
   return dibujarTabla(['SOLICITUDES POR TIPO', 'TOTAL', 'PORCENTAJE'],
-    [['INCIDENCIAS', c.incidencias, pct(c.incidencias, c.total) + '%'],
-     ['SOLICITUDES', c.solicitudes, pct(c.solicitudes, c.total) + '%'],
-     ['TOTAL', c.total, '100.0%']], { total: true, anchos: [0, 220, 220] });
+    [['INCIDENCIAS', c.incidencias, pctPar(c.incidencias, c.solicitudes, c.total)[0] + '%'],
+     ['SOLICITUDES', c.solicitudes, pctPar(c.incidencias, c.solicitudes, c.total)[1] + '%'],
+     ['TOTAL', c.total, '100%']], { total: true, anchos: [0, 220, 220] });
 }
 function tablaCategorias(tipo, etiqueta){
   const { sample } = getSeleccionPorPorcentaje(Number(percentSelect.value));
@@ -1280,6 +1281,245 @@ function editarEleva(doc, d){
   return cambios;
 }
 
+/* ---------- 5h. Aviso de mes ----------
+   Busca menciones de meses en un texto ("SET 2026", "octubre de 2026", "Setiembre 2026"…)
+   y devuelve las que NO coinciden con el mes del entregable. */
+const MES_ABREV = { ENE:0, FEB:1, MAR:2, ABR:3, MAY:4, JUN:5, JUL:6, AGO:7, SET:8, SEP:8, SEPT:8, OCT:9, NOV:10, DIC:11 };
+function mesesDistintos(texto, mesIndice, anio){
+  const encontrados = [];
+  const nombres = MESES.concat(['septiembre']).join('|');
+  const reNombre = new RegExp(`\\b(${nombres})\\b(?:\\s+(?:de(?:l)?\\s+)?(20\\d\\d))?`, 'gi');
+  const reAbrev = /\b(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEPT|SET|SEP|OCT|NOV|DIC)\.?\s*-?\s*(20\d\d)\b/g;
+  let m;
+  const t = String(texto || '');
+  while((m = reNombre.exec(t))){
+    const nom = m[1].toLowerCase(), idx = nom === 'septiembre' ? 8 : MESES.indexOf(nom);
+    encontrados.push({ texto: m[0], mes: idx, anio: m[2] ? +m[2] : null });
+  }
+  while((m = reAbrev.exec(t))) encontrados.push({ texto: m[0], mes: MES_ABREV[m[1]], anio: +m[2] });
+  const distintos = encontrados.filter(e => e.mes !== mesIndice || (e.anio && e.anio !== anio));
+  return [...new Map(distintos.map(e => [e.texto.toLowerCase(), e])).values()].map(e => e.texto);
+}
+
+/* ---------- 5g. Contenido del manual del mes ----------
+   Se borra el manual anterior (todo lo que está entre el enlace del manual y el siguiente
+   objetivo, p. ej. "Realizar el análisis estadístico…") y se inserta el contenido completo
+   del Word del manual: textos, estilos, viñetas/numeración, tablas, imágenes e hipervínculos.
+   - Los estilos del manual se copian con prefijo "Man" para no cambiar los del informe y
+     sin nivel de esquema (así sus títulos NO entran al índice del informe).
+   - Las listas se copian con numeración propia.
+   - Las imágenes se copian al informe y se ajustan al ancho de la página.
+   - Se conservan los saltos de sección del informe. */
+
+const NS_PKG_REL = NS_REL;
+
+function hijosElemento(el, nombre){ return Array.from(el.childNodes).filter(n => n.nodeType === 1 && (!nombre || n.localName === nombre)); }
+function attrW(el, a){ return el.getAttributeNS(W_NS, a) || el.getAttribute('w:' + a); }
+function setAttrW(el, a, v){ el.setAttributeNS(W_NS, 'w:' + a, v); }
+
+async function leerXml(zip, ruta){
+  const f = zip.file(ruta);
+  return f ? new DOMParser().parseFromString(await f.async('string'), 'application/xml') : null;
+}
+function guardarXml(zip, ruta, d){
+  let x = new XMLSerializer().serializeToString(d);
+  if(!x.startsWith('<?xml')) x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' + x;
+  zip.file(ruta, x);
+}
+
+async function insertarManual(zip, doc, manualBuffer){
+  const mz = await JSZip.loadAsync(manualBuffer);
+  const mdoc = await leerXml(mz, 'word/document.xml');
+  if(!mdoc) throw new Error('el manual no parece un Word válido');
+  const mbody = mdoc.getElementsByTagNameNS(W_NS, 'body')[0];
+
+  // ---- 1) zona del manual anterior en el informe
+  const hijos = hijosCuerpo(doc);
+  const iL = hijos.findIndex(n => n.localName === 'p' && /^Link de acceso al manual/i.test(paraText(n).trim()));
+  if(iL < 0) throw new Error('no se encontró "Link de acceso al manual" en el Word');
+  let iM = -1;
+  for(let k = iL + 1; k <= iL + 4 && k < hijos.length; k++) if(hijos[k].localName === 'p' && paraText(hijos[k]).trim()){ iM = k; break; }
+  if(iM < 0) throw new Error('no se encontró el enlace del manual');
+  const esObjetivo = n => {
+    if(n.localName !== 'p' || !paraText(n).trim()) return false;
+    const pPr = pPrDe(n, false);
+    if(!pPr) return false;
+    const st = hijosElemento(pPr, 'pStyle')[0];
+    return /^Objetivos$/i.test(st ? attrW(st, 'val') : '') || hijosElemento(pPr, 'outlineLvl').length > 0;
+  };
+  let iFin = hijos.findIndex((n, k) => k > iM && esObjetivo(n));
+  if(iFin < 0) throw new Error('no se encontró dónde termina el manual anterior (el siguiente objetivo)');
+  const tieneSect = n => n.localName === 'p' && n.getElementsByTagNameNS(W_NS, 'sectPr').length > 0;
+  const zona = hijos.slice(iM + 1, iFin);
+  const borrados = zona.filter(n => !tieneSect(n));
+  const antes = borrados.map(n => paraText(n).trim()).filter(Boolean)[0] || '(manual anterior)';
+  borrados.forEach(n => n.parentNode.removeChild(n));
+  const ancla = zona.find(tieneSect) || hijos[iFin];
+
+  // ---- 2) estilos del manual -> copiados con prefijo "Man"
+  const stylesI = await leerXml(zip, 'word/styles.xml');
+  const stylesM = await leerXml(mz, 'word/styles.xml');
+  const idsI = new Set(Array.from(stylesI.getElementsByTagNameNS(W_NS, 'style')).map(s => attrW(s, 'styleId')));
+  const estilosM = {};
+  if(stylesM) Array.from(stylesM.getElementsByTagNameNS(W_NS, 'style')).forEach(s => { estilosM[attrW(s, 'styleId')] = s; });
+  const mapaEstilo = {};
+  const copiarEstilo = id => {
+    if(!id || mapaEstilo[id] !== undefined) return mapaEstilo[id];
+    const s = estilosM[id];
+    if(!s){ mapaEstilo[id] = null; return null; }
+    const nuevoId = ('Man' + id).replace(/[^A-Za-z0-9]/g, '');
+    mapaEstilo[id] = nuevoId;
+    if(!idsI.has(nuevoId)){
+      const c = stylesI.importNode(s, true);
+      setAttrW(c, 'styleId', nuevoId);
+      c.removeAttributeNS(W_NS, 'default'); c.removeAttribute('w:default');
+      const nombre = hijosElemento(c, 'name')[0];
+      if(nombre) setAttrW(nombre, 'val', 'Manual - ' + attrW(nombre, 'val'));
+      // sin nivel de esquema ni numeración propia del estilo (no entra al índice)
+      Array.from(c.getElementsByTagNameNS(W_NS, 'outlineLvl')).forEach(n => n.parentNode.removeChild(n));
+      Array.from(c.getElementsByTagNameNS(W_NS, 'numPr')).forEach(n => n.parentNode.removeChild(n));
+      ['basedOn', 'next', 'link'].forEach(tag => hijosElemento(c, tag).forEach(r => {
+        const destino = copiarEstilo(attrW(r, 'val'));
+        if(destino) setAttrW(r, 'val', destino); else c.removeChild(r);
+      }));
+      stylesI.documentElement.appendChild(c);
+      idsI.add(nuevoId);
+    }
+    return nuevoId;
+  };
+  ['pStyle', 'rStyle', 'tblStyle'].forEach(tag => Array.from(mbody.getElementsByTagNameNS(W_NS, tag)).forEach(el => {
+    const nuevo = copiarEstilo(attrW(el, 'val'));
+    if(nuevo) setAttrW(el, 'val', nuevo); else el.parentNode.removeChild(el);
+  }));
+  guardarXml(zip, 'word/styles.xml', stylesI);
+
+  // ---- 3) listas (viñetas / numeración) con identificadores nuevos
+  const numM = await leerXml(mz, 'word/numbering.xml');
+  const usados = Array.from(mbody.getElementsByTagNameNS(W_NS, 'numId')).map(n => attrW(n, 'val')).filter(v => v && v !== '0');
+  if(numM && usados.length){
+    let numI = await leerXml(zip, 'word/numbering.xml');
+    if(!numI) throw new Error('el informe no tiene definición de listas (numbering.xml)');
+    const raizI = numI.documentElement;
+    let maxAbs = Math.max(0, ...Array.from(numI.getElementsByTagNameNS(W_NS, 'abstractNum')).map(a => +attrW(a, 'abstractNumId')));
+    let maxNum = Math.max(0, ...Array.from(numI.getElementsByTagNameNS(W_NS, 'num')).map(a => +attrW(a, 'numId')));
+    const absM = {}, numsM = {};
+    Array.from(numM.getElementsByTagNameNS(W_NS, 'abstractNum')).forEach(a => { absM[attrW(a, 'abstractNumId')] = a; });
+    Array.from(numM.getElementsByTagNameNS(W_NS, 'num')).forEach(n => { numsM[attrW(n, 'numId')] = n; });
+    const mapaAbs = {}, mapaNum = {};
+    const primerNum = hijosElemento(raizI, 'num')[0];
+    [...new Set(usados)].forEach(id => {
+      const n = numsM[id]; if(!n) return;
+      const absId = attrW(hijosElemento(n, 'abstractNumId')[0], 'val');
+      if(mapaAbs[absId] === undefined && absM[absId]){
+        const a = numI.importNode(absM[absId], true);
+        setAttrW(a, 'abstractNumId', String(++maxAbs));
+        Array.from(a.getElementsByTagNameNS(W_NS, 'pStyle')).forEach(ps => ps.parentNode.removeChild(ps));
+        hijosElemento(a, 'numStyleLink').concat(hijosElemento(a, 'styleLink')).forEach(x => a.removeChild(x));
+        raizI.insertBefore(a, primerNum || null);    // los abstractNum van antes de los num
+        mapaAbs[absId] = maxAbs;
+      }
+      const nn = numI.importNode(n, true);
+      setAttrW(nn, 'numId', String(++maxNum));
+      setAttrW(hijosElemento(nn, 'abstractNumId')[0], 'val', String(mapaAbs[absId]));
+      raizI.appendChild(nn);
+      mapaNum[id] = maxNum;
+    });
+    Array.from(mbody.getElementsByTagNameNS(W_NS, 'numId')).forEach(n => {
+      const v = attrW(n, 'val');
+      if(mapaNum[v]) setAttrW(n, 'val', String(mapaNum[v]));
+      else if(v !== '0'){ const np = n.parentNode; np.parentNode.removeChild(np); }
+    });
+    guardarXml(zip, 'word/numbering.xml', numI);
+  }
+
+  // ---- 4) imágenes e hipervínculos (relaciones)
+  const relsM = await leerXml(mz, 'word/_rels/document.xml.rels');
+  const relsI = await leerXml(zip, 'word/_rels/document.xml.rels');
+  const relPorId = {};
+  if(relsM) Array.from(relsM.getElementsByTagNameNS(NS_REL, 'Relationship')).forEach(r => { relPorId[r.getAttribute('Id')] = r; });
+  const ct = await leerXml(zip, '[Content_Types].xml');
+  const extsCt = new Set(Array.from(ct.getElementsByTagNameNS(NS_CT, 'Default')).map(d => (d.getAttribute('Extension') || '').toLowerCase()));
+  const tiposImg = { png: 'image/png', jpeg: 'image/jpeg', jpg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', emf: 'image/x-emf', wmf: 'image/x-wmf', tif: 'image/tiff', tiff: 'image/tiff', svg: 'image/svg+xml' };
+  const mapaRel = {};
+  let contRel = 0, avisos = 0;
+  const nuevaRel = async id => {
+    if(mapaRel[id]) return mapaRel[id];
+    const r = relPorId[id]; if(!r) return null;
+    const tipo = r.getAttribute('Type') || '', target = r.getAttribute('Target') || '';
+    const nuevoId = 'rIdMan' + (++contRel);
+    const rel = relsI.createElementNS(NS_REL, 'Relationship');
+    rel.setAttribute('Id', nuevoId); rel.setAttribute('Type', tipo);
+    if(r.getAttribute('TargetMode') === 'External'){
+      rel.setAttribute('Target', target); rel.setAttribute('TargetMode', 'External');
+    } else if(/\/image$/.test(tipo)){
+      const origen = mz.file('word/' + target.replace(/^\.?\//, ''));
+      if(!origen){ avisos++; return null; }
+      const ext = (target.split('.').pop() || 'png').toLowerCase();
+      const destino = `media/manual_${contRel}.${ext}`;
+      zip.file('word/' + destino, await origen.async('uint8array'));
+      rel.setAttribute('Target', destino);
+      if(!extsCt.has(ext)){
+        const d = ct.createElementNS(NS_CT, 'Default');
+        d.setAttribute('Extension', ext); d.setAttribute('ContentType', tiposImg[ext] || 'image/' + ext);
+        ct.documentElement.insertBefore(d, ct.documentElement.firstChild); extsCt.add(ext);
+      }
+    } else { avisos++; return null; }   // gráficos u objetos incrustados: no se copian
+    relsI.documentElement.appendChild(rel);
+    mapaRel[id] = nuevoId;
+    return nuevoId;
+  };
+  const conRid = Array.from(mbody.getElementsByTagName('*')).filter(el =>
+    Array.from(el.attributes).some(a => a.namespaceURI === NS_R));
+  for(const el of conRid){
+    for(const a of Array.from(el.attributes).filter(a => a.namespaceURI === NS_R)){
+      const nuevo = await nuevaRel(a.value);
+      if(nuevo) el.setAttributeNS(NS_R, a.name, nuevo);
+      else if(el.localName === 'hyperlink') el.removeAttributeNS(NS_R, a.localName);
+    }
+  }
+  guardarXml(zip, 'word/_rels/document.xml.rels', relsI);
+  guardarXml(zip, '[Content_Types].xml', ct);
+
+  // ---- 5) limpieza: sin secciones, marcadores, comentarios ni notas del manual; ids de dibujos únicos
+  const quitar = tag => Array.from(mbody.getElementsByTagNameNS(W_NS, tag)).forEach(n => n.parentNode && n.parentNode.removeChild(n));
+  ['sectPr', 'bookmarkStart', 'bookmarkEnd', 'commentRangeStart', 'commentRangeEnd', 'commentReference',
+   'footnoteReference', 'endnoteReference', 'proofErr', 'outlineLvl'].forEach(quitar);
+  let idDib = 50000;
+  Array.from(mbody.getElementsByTagNameNS(NS_WP, 'docPr')).forEach(d => d.setAttribute('id', String(++idDib)));
+
+  // ancho máximo de imágenes = ancho útil de la sección donde se inserta
+  const sectAncla = ancla.getElementsByTagNameNS(W_NS, 'sectPr')[0] ||
+                    Array.from(cuerpoDe(doc).childNodes).find(n => n.localName === 'sectPr');
+  const at = (el, a) => el ? +(attrW(el, a) || 0) : 0;
+  const pgSz = sectAncla && sectAncla.getElementsByTagNameNS(W_NS, 'pgSz')[0], pgMar = sectAncla && sectAncla.getElementsByTagNameNS(W_NS, 'pgMar')[0];
+  const anchoMax = pgSz ? (at(pgSz, 'w') - at(pgMar, 'left') - at(pgMar, 'right')) * 635 : 5400000;
+  Array.from(mbody.getElementsByTagNameNS(NS_WP, 'extent')).forEach(e => {
+    const cx = +e.getAttribute('cx');
+    if(cx > anchoMax){
+      const f = anchoMax / cx, cy = Math.round(+e.getAttribute('cy') * f);
+      e.setAttribute('cx', anchoMax); e.setAttribute('cy', cy);
+      const dib = e.parentNode;
+      Array.from(dib.getElementsByTagNameNS(NS_A, 'ext')).filter(x => x.parentNode.localName === 'xfrm')
+        .forEach(x => { x.setAttribute('cx', anchoMax); x.setAttribute('cy', cy); });
+    }
+  });
+
+  // ---- 6) insertar: salto de página + contenido del manual
+  const salto = doc.createElementNS(W_NS, 'w:p');
+  const rS = doc.createElementNS(W_NS, 'w:r'), br = doc.createElementNS(W_NS, 'w:br');
+  br.setAttributeNS(W_NS, 'w:type', 'page'); rS.appendChild(br); salto.appendChild(rS);
+  ancla.parentNode.insertBefore(salto, ancla);
+  const contenido = hijosElemento(mbody).filter(n => n.localName === 'p' || n.localName === 'tbl');
+  contenido.forEach(n => ancla.parentNode.insertBefore(doc.importNode(n, true), ancla));
+
+  const parrafos = contenido.filter(n => n.localName === 'p' && paraText(n).trim()).length;
+  const imagenes = Array.from(mbody.getElementsByTagNameNS(NS_A, 'blip')).length;
+  const titulo = contenido.map(n => paraText(n).trim()).find(Boolean) || '';
+  return { campo: 'Manual del mes', manual: true, antes,
+    despues: `${titulo} — ${parrafos} párrafos, ${imagenes} imagen(es)` + (avisos ? ` (${avisos} elemento(s) no se pudieron copiar)` : ''),
+    info: { parrafos, imagenes, titulo, avisos } };
+}
+
 /* ---------- 5c. Nombres "legibles" de las categorías de GLPI ----------
    GLPI guarda la categoría como ruta: "SOFTWARE ESPECIALIZADO > Instalaciones > RENIEC - Certificado digital".
    Para los párrafos se arma un nombre corto: "Instalación de certificado digital".
@@ -1468,8 +1708,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
   (function(){
     if(window.pdfjsLib){
       // window.PDF_WORKER_SRC solo se define en la copia de prueba dentro de Claude
-      pdfjsLib.GlobalWorkerOptions.workerSrc = window.PDF_WORKER_SRC ||
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = window.PDF_WORKER_SRC || 'libs/pdf.worker.min.js';
     }
 
     // estado de los documentos. "opcional": si no se sube, el Word conserva lo que tiene.
@@ -1495,16 +1734,19 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
     // oculta la vista previa y el botón flotante de descarga (cuando cambian los archivos)
     function ocultarPreview(){
       ['informePreview', 'confPreview', 'elevaPreview'].forEach(id => { const el = document.getElementById(id); if(el){ el.style.display = 'none'; el.dataset.listo = ''; } });
-      resultados.ent = resultados.conf = resultados.eleva = null;
+      resultados.ent = resultados.conf = resultados.eleva = resultados.zip = null;
+      const z = document.getElementById('zipResultado'); if(z){ z.style.display = 'none'; z.innerHTML = ''; }
+      const dt = document.getElementById('docTabs'); if(dt) dt.style.display = 'none';
       ponerFab();
+      if(typeof actualizarPasos === 'function') actualizarPasos();
     }
     // botón flotante de descarga: muestra el Word generado en la pestaña activa
     function ponerFab(){
-      const r = resultados[tabActiva];
+      const r = resultados.zip || resultados[tabActiva];
       let fab = document.getElementById('mnFabDescarga');
       if(!r){ if(fab) fab.remove(); return; }
       if(!fab){ fab = document.createElement('div'); fab.id = 'mnFabDescarga'; fab.className = 'mn-fab'; document.body.appendChild(fab); }
-      fab.innerHTML = `<span><i class="bi bi-file-earmark-word"></i> ${esc(r.nombre)}</span>
+      fab.innerHTML = `<span><i class="bi ${resultados.zip ? 'bi-file-earmark-zip' : 'bi-file-earmark-word'}"></i> ${esc(r.nombre)}</span>
         <button class="btn btn-mn btn-sm" type="button"><i class="bi bi-download"></i> Descargar</button>`;
       fab.querySelector('button').addEventListener('click', () => descargarArchivo(r.blob, r.nombre));
     }
@@ -1514,7 +1756,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
 
     function mensaje(tipo, html){
       if(!html){ msg.innerHTML = ''; return; }
-      const color = tipo === 'err' ? 'var(--mn-red)' : '#9A6700';
+      const color = tipo === 'err' ? 'var(--mn-red)' : 'var(--mn-warn)';
       const icon = tipo === 'err' ? 'bi-x-circle-fill' : 'bi-exclamation-triangle';
       msg.innerHTML = `<div class="small mt-2" style="color:${color};"><i class="bi ${icon}"></i> ${html}</div>`;
     }
@@ -1523,7 +1765,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
     function pintarSlots(){
       const recien = Object.keys(docs).filter(k => docs[k].file && !yaCargados.has(k));
       Object.keys(docs).forEach(k => docs[k].file ? yaCargados.add(k) : yaCargados.delete(k));
-      slots.innerHTML = Object.entries(docs).filter(([, d]) => d.tabs.includes(tabActiva)).map(([k, d]) => {
+      slots.innerHTML = Object.entries(docs).map(([k, d]) => {
         let ok, nombre, detalle = d.detalle || '', quitar = !!d.file;
         ok = !!d.file;
         nombre = ok ? esc(d.file.name) : (d.opcional ? (d.textoOpcional || 'Opcional — si no lo subes, se mantiene la imagen actual') : 'Pendiente');
@@ -1531,7 +1773,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
         return `
         <div class="mn-doc-slot ${ok ? 'ok' : ''} ${recien.includes(k) ? 'recien' : ''}">
           <div class="mn-doc-name">
-            <i class="bi ${ok ? 'bi-check-circle-fill' : d.icon}" style="color:${ok ? '#1E7B45' : 'var(--mn-muted)'}"></i>
+            <i class="bi ${ok ? 'bi-check-circle-fill' : d.icon}" style="color:${ok ? 'var(--mn-ok)' : 'var(--mn-muted)'}"></i>
             ${d.label}
           </div>
           <div class="mn-doc-file">${nombre}</div>
@@ -1541,11 +1783,11 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
         </div>`;
       }).join('');
       // campos del enlace del manual: aparecen solo cuando hay un manual cargado
-      $('manualEnlace').style.display = (docs.manual.file && tabActiva === 'ent') ? 'block' : 'none';
+      $('manualEnlace').style.display = docs.manual.file ? 'block' : 'none';
       // estado del Excel: se valida arriba; aquí solo se informa en una línea
-      $('docsExcelEstado').innerHTML = hayExcel()
-        ? `<span style="color:var(--mn-ok);"><i class="bi bi-check-circle-fill"></i> Excel de tickets validado arriba: ${esc($('fileRowText').textContent)}</span>`
-        : `<span style="color:var(--mn-warn);"><i class="bi bi-info-circle"></i> Falta el Excel de tickets: súbelo arriba (o suéltalo aquí); se valida en la parte superior.</span>`;
+      // Excel: cuando está validado se ve en la línea de arriba (nombre + "Archivo validado")
+      $('docsExcelEstado').innerHTML = hayExcel() ? ''
+        : `<span style="color:var(--mn-warn);"><i class="bi bi-info-circle"></i> Falta el Excel de tickets (necesario para el Entregable y los cuadros).</span>`;
       slots.querySelectorAll('[data-quitar]').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.quitar;
         if(docs[k].url) URL.revokeObjectURL(docs[k].url);
@@ -1569,9 +1811,21 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
 
     function actualizarControles(){
       const base = docs.tdr.parsed && docs.os.parsed;
-      controls.style.display = (tabActiva === 'ent' && base && docs.word.buffer) ? 'block' : 'none';
-      $('confControls').style.display = (tabActiva === 'conf' && base && docs.conf.buffer) ? 'block' : 'none';
-      $('elevaControls').style.display = (tabActiva === 'eleva' && base && docs.eleva.buffer) ? 'block' : 'none';
+      const listo1 = paso1Listo();
+      controls.style.display = listo1 ? 'block' : 'none';
+      $('paso2Vacio').style.display = listo1 ? 'none' : 'block';
+      $('confControls').style.display = (listo1 && docs.conf.buffer) ? 'block' : 'none';
+      $('elevaControls').style.display = (listo1 && docs.eleva.buffer) ? 'block' : 'none';
+      $('numsHint').style.display = (listo1 && (docs.conf.buffer || docs.eleva.buffer)) ? 'block' : 'none';
+      $('paso3Vacio').style.display = listo1 ? 'none' : 'block';
+      $('paso3Botones').style.display = listo1 ? 'flex' : 'none';
+      $('btnProcesarInforme').disabled = !(base && docs.word.buffer && hayExcel());
+      $('btnConf').disabled = !(base && docs.conf.buffer);
+      $('btnEleva').disabled = !(base && docs.eleva.buffer);
+      $('btnSoloCuadros').disabled = !hayExcel();
+      const nDocs = ['word', 'conf', 'eleva'].filter(k => docs[k].buffer && (k !== 'word' || hayExcel())).length;
+      $('btnTodo').querySelector('span').textContent = nDocs > 1 ? `GENERAR LOS ${nDocs} DOCUMENTOS (ZIP)` : 'GENERAR DOCUMENTO';
+      actualizarPasos();
       if(!docs.os.parsed) return;
       const cuotas = docs.os.parsed.cuotas;
       const previo = cuotaSel.value;
@@ -1635,7 +1889,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
           } else if(['png','jpg','jpeg','webp','gif','bmp'].includes(ext)){
             const clave = tipoImagenPorNombre(file.name);
             if(!clave){
-              avisos.push(`"${esc(file.name)}": no sé qué imagen es. El nombre debe contener "ficha" (Ficha de evaluación) o "grafica 11".`);
+              avisos.push(`"${esc(file.name)}": no sé qué imagen es. El nombre debe contener "ficha" (Ficha de evaluación) o "categorizacion" (Categorización en GLPI).`);
               continue;
             }
             const img = await prepararImagen(file);
@@ -1713,10 +1967,9 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
 
     const btnProc = $('btnProcesarInforme');
     const htmlBtnProc = btnProc.innerHTML;
-    btnProc.addEventListener('click', async () => {
-      mensaje(null);
+    async function procesarEntregable(){
       btnProc.classList.add('cargando');
-      btnProc.innerHTML = '<span class="mn-spin"></span> PROCESANDO…';
+      btnProc.innerHTML = '<span class="mn-spin"></span> Generando…';
       await new Promise(r => setTimeout(r, 30));   // deja que se pinte el estado "procesando"
       try{
         if(!hayExcel())
@@ -1774,6 +2027,20 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
           }
         }
 
+        // 4b') aviso si el manual o su título mencionan otro mes
+        if(docs.manual.file){
+          const textoManual = allParagraphs(docs.manual.xmlDoc).map(paraText).join(' ') + ' ' + $('manualTexto').value;
+          const otros = mesesDistintos(textoManual, cuota.inicio.getMonth(), cuota.inicio.getFullYear());
+          if(otros.length) cambios.push({ campo: 'Mes del manual', avisoMes: true, antes: '', despues:
+            `El manual menciona ${otros.map(x => '«' + x + '»').join(', ')} y el entregable es de ${MESES[cuota.inicio.getMonth()]} ${cuota.inicio.getFullYear()}. Revisa el manual antes de entregar.` });
+        }
+
+        // 4c) contenido del manual del mes (reemplaza al manual anterior)
+        if(docs.manual.file){
+          try{ cambios.push(await insertarManual(zip, xmlDoc, docs.manual.buffer)); }
+          catch(e){ cambios.push({ campo: 'Manual del mes', manual: true, antes: '(sin cambios)', despues: e.message, falta: true }); }
+        }
+
         // 5) tabla de anexos con los tickets del Excel (al % elegido y al 100%)
         try{
           const an = llenarAnexos(xmlDoc, Number(percentSelect.value));
@@ -1794,13 +2061,19 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }),
           nombre: nombreArchivoInforme(cuota.inicio.getMonth(), cuota.inicio.getFullYear()) };
         mostrarVistaPrevia(cambios, datosExcel);
+        return true;
       }catch(e){
-        ocultarPreview();
-        mensaje('err', 'No se pudo procesar el informe: ' + esc(e.message));
+        $('informePreview').style.display = 'none'; $('informePreview').dataset.listo = ''; resultados.ent = null;
+        mensajeGen('No se pudo generar el Entregable: ' + esc(e.message));
+        return false;
       }finally{
         btnProc.classList.remove('cargando');
         btnProc.innerHTML = htmlBtnProc;
       }
+    }
+    btnProc.addEventListener('click', async () => {
+      mensajeGen(null); resultados.zip = null; $('zipResultado').style.display = 'none';
+      if(await procesarEntregable()) mostrarResultados('ent');
     });
 
     function celda(v){
@@ -1809,7 +2082,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
     /* Lista de chequeo: resumen de qué quedó listo y qué falta en el Word.
        estado: 'ok' (listo) · 'warn' (se mantiene lo anterior / revisar) · 'pend' (aún no automatizado) */
     function listaChequeo(cambios){
-      const textos = cambios.filter(c => !c.imagen && !c.orden && !c.bloqueB && !c.anexos && !c.enlace && !/^Portada|OBJETIVO/.test(c.campo));
+      const textos = cambios.filter(c => !c.imagen && !c.orden && !c.bloqueB && !c.anexos && !c.enlace && !c.manual && !c.avisoMes && !/^Portada|OBJETIVO/.test(c.campo));
       const bB = (cambios.find(c => c.bloqueB) || {}).bloqueB || [];
       const bBok = bB.filter(x => !x.error).length;
       const textosFalta = textos.filter(c => c.falta).length;
@@ -1833,15 +2106,18 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
              `Tablas y gráficos del Word con datos del Excel: ${bBok} de ${bB.length}` +
              (bBok < bB.length ? ` (no se pudo: ${bB.filter(x => x.error).map(x => x.titulo.split(':')[0]).join(', ')})` : '')),
         docs.manual.file
-          ? item('pend', 'Manual del mes: archivo recibido — su inserción se activa al revisar tu ejemplo')
+          ? (() => { const m = cambios.find(c => c.manual);
+              return m && !m.falta ? item('ok', `Manual del mes insertado: ${m.info.parrafos} párrafos y ${m.info.imagenes} imagen(es)`)
+                                   : item('warn', 'Manual del mes: ' + (m ? m.despues : 'no se insertó')); })()
           : item('warn', 'Manual del mes: no se subió, queda el manual anterior'),
+        ...cambios.filter(c => c.avisoMes).map(c => item('warn', c.despues)),
         ...(docs.manual.file ? [(() => { const e = cambios.find(c => c.enlace);
             return e && !e.falta ? item('ok', 'Enlace del manual: hipervínculo actualizado') : item('warn', 'Enlace del manual: ' + (e ? e.despues : 'sin cambios')); })()] : []),
         (() => { const a = cambios.find(c => c.anexos);
                  return a && !a.falta ? item('ok', `Tabla de anexos: ${a.anexos.muestra} tickets al ${a.anexos.pct}% + ${a.anexos.total} al 100%`)
                                       : item('warn', 'Tabla de anexos: ' + (a ? a.despues : 'no se encontró')); })()
       ];
-      const icono = { ok: ['bi-check-circle-fill', '#1E7B45'], warn: ['bi-exclamation-triangle-fill', '#9A6700'], pend: ['bi-dash-circle', 'var(--mn-muted)'] };
+      const icono = { ok: ['bi-check-circle-fill', 'var(--mn-ok)'], warn: ['bi-exclamation-triangle-fill', 'var(--mn-warn)'], pend: ['bi-dash-circle', 'var(--mn-muted)'] };
       return `<ul class="mn-checklist">${items.map((i, n) =>
         `<li style="--i:${n}"><i class="bi ${icono[i.estado][0]}" style="color:${icono[i.estado][1]}"></i> ${esc(i.texto)}</li>`).join('')}</ul>`;
     }
@@ -1850,7 +2126,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
       const faltan = cambios.filter(c => c.falta);
       const fila = c => c.bloqueB
         ? `<tr><td><strong>${esc(c.campo)}</strong></td><td colspan="2"><div class="mn-thumbs">${c.bloqueB.map(x => x.error
-            ? `<figure><figcaption>${esc(x.titulo)}</figcaption><div class="small" style="color:#9A6700;">${esc(x.error)}</div></figure>`
+            ? `<figure><figcaption>${esc(x.titulo)}</figcaption><div class="small" style="color:var(--mn-warn);">${esc(x.error)}</div></figure>`
             : `<figure><img src="${x.url}" alt=""><figcaption>${esc(x.titulo)}</figcaption></figure>`).join('')}</div></td></tr>`
         : c.imagen
         ? `<tr><td><strong>${esc(c.campo)}</strong></td><td class="antes">${esc(c.antes)}</td>
@@ -1863,7 +2139,8 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
           <button id="btnDescargarInforme" class="btn btn-mn px-4 py-2">
             <i class="bi bi-download"></i> Descargar ${esc(resultados.ent.nombre)}
           </button>
-          ${faltan.length ? `<p class="small mb-0" style="color:#9A6700;"><i class="bi bi-exclamation-triangle"></i>
+          ${cambios.filter(c => c.avisoMes).map(c => `<p class="small mb-0 mn-aviso-mes"><i class="bi bi-calendar-x"></i> ${esc(c.despues)}</p>`).join('')}
+          ${faltan.length ? `<p class="small mb-0" style="color:var(--mn-warn);"><i class="bi bi-exclamation-triangle"></i>
             No se pudo aplicar: ${faltan.map(f => esc(f.campo)).join(', ')}.
             Revisa que el Word tenga ese texto o título igual que en la plantilla.</p>` : ''}
           <p class="text-muted small mb-0">Datos usados: ${d.total} tickets del Excel, porcentaje <strong>${d.pct}%</strong>
@@ -1903,7 +2180,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
 
     /* ===== Pestañas: Entregable · Informe de Conformidad · Eleva Producto ===== */
     const AYUDA = {
-      ent: 'Sube juntos o uno por uno: el <strong>TdR</strong> y la <strong>Orden de Servicio</strong> (PDF), el <strong>informe</strong> y el <strong>manual del mes</strong> (Word) y las imágenes de la <strong>Ficha de evaluación</strong> y la <strong>Gráfica 11</strong> (el nombre debe contener "ficha" o "grafica 11"). El Excel de tickets también se puede soltar aquí.',
+      ent: 'Sube juntos o uno por uno: el <strong>TdR</strong> y la <strong>Orden de Servicio</strong> (PDF), el <strong>informe</strong> y el <strong>manual del mes</strong> (Word) y las imágenes de la <strong>Ficha de evaluación</strong> y de la <strong>Categorización en GLPI</strong> (el nombre debe contener "ficha" o "categorizacion"). El Excel de tickets también se puede soltar aquí.',
       conf: 'Sube el <strong>TdR</strong> y la <strong>Orden de Servicio</strong> (PDF) y el Word del <strong>Informe de Conformidad</strong> anterior. Se actualizan el N.º, la referencia, la fecha, el nombre del servicio y las actividades.',
       eleva: 'Sube el <strong>TdR</strong> y la <strong>Orden de Servicio</strong> (PDF) y el Word del <strong>Eleva Producto</strong> anterior. Se actualizan el N.º, la OS, la fecha, el nombre del servicio, el entregable y las actividades.'
     };
@@ -1925,9 +2202,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
         if(el.dataset.solo !== t){ el.style.display = 'none'; return; }
         if(/Preview$/.test(el.id)) el.style.display = el.dataset.listo ? 'block' : 'none';
       });
-      $('docsAyuda').innerHTML = AYUDA[t];
-      mensaje(null);
-      pintarSlots(); actualizarControles(); ponerFab();
+      ponerFab();
       requestAnimationFrame(moverIndicadorDocs);
     }
     document.querySelectorAll('#docTabs .mn-seg-btn').forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.dtab)));
@@ -1958,8 +2233,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
     async function generarDocCorto(tipo){
       const btn = $(tipo === 'conf' ? 'btnConf' : 'btnEleva');
       const htmlBtn = btn.innerHTML;
-      mensaje(null);
-      btn.classList.add('cargando'); btn.innerHTML = '<span class="mn-spin"></span> GENERANDO…';
+      btn.classList.add('cargando'); btn.innerHTML = '<span class="mn-spin"></span> Generando…';
       await new Promise(r => setTimeout(r, 30));
       try{
         const tdr = docs.tdr.parsed, os = docs.os.parsed;
@@ -1977,7 +2251,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
           cambios = editarConformidad(xmlDoc, { numTecnico, numServicio, fecha, numeroOs: os.numeroOs, servicio: tdr.denominacion, actividades });
           nombre = `Informe de conformidad - ${MesCap(fecha)} ${fecha.getFullYear()}.docx`;
         } else {
-          const nCuota = Number($('cuotaEleva').value);
+          const nCuota = Number(cuotaSel.value);
           const ent = (tdr.entregables || [])[nCuota - 1];
           cambios = editarEleva(xmlDoc, { numServicio, fecha, numeroOs: os.numeroOs, servicio: tdr.denominacion,
             entregableTexto: ent ? ent.texto : '', actividades });
@@ -1989,19 +2263,95 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
         resultados[tipo] = { blob: await zip.generateAsync({ type: 'blob', compression: 'DEFLATE',
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), nombre };
         mostrarResultadoCorto(tipo, cambios);
+        return true;
       }catch(e){
-        mensaje('err', 'No se pudo generar el documento: ' + esc(e.message));
+        mensajeGen(`No se pudo generar ${tipo === 'conf' ? 'el Informe de Conformidad' : 'el Eleva Producto'}: ` + esc(e.message));
+        return false;
       }finally{
         btn.classList.remove('cargando'); btn.innerHTML = htmlBtn;
       }
     }
-    $('btnConf').addEventListener('click', () => generarDocCorto('conf'));
-    $('btnEleva').addEventListener('click', () => generarDocCorto('eleva'));
+    ['conf', 'eleva'].forEach(t => $(t === 'conf' ? 'btnConf' : 'btnEleva').addEventListener('click', async () => {
+      mensajeGen(null); resultados.zip = null; $('zipResultado').style.display = 'none';
+      if(await generarDocCorto(t)) mostrarResultados(t);
+    }));
+
+    /* ===== Generar todos los documentos y empaquetarlos en un ZIP ===== */
+    async function generarTodo(){
+      const btn = $('btnTodo'), html = btn.innerHTML;
+      mensajeGen(null); resultados.zip = null; $('zipResultado').style.display = 'none';
+      btn.classList.add('cargando'); btn.innerHTML = '<span class="mn-spin"></span> GENERANDO DOCUMENTOS…';
+      const hechos = [];
+      try{
+        if(docs.word.buffer && hayExcel() && await procesarEntregable()) hechos.push('ent');
+        if(docs.conf.buffer && await generarDocCorto('conf')) hechos.push('conf');
+        if(docs.eleva.buffer && await generarDocCorto('eleva')) hechos.push('eleva');
+        if(!hechos.length) return;
+        const cuota = docs.os.parsed.cuotas.find(c => String(c.numero) === cuotaSel.value) || docs.os.parsed.cuotas[0];
+        const z = new JSZip();
+        hechos.forEach(h => z.file(resultados[h].nombre, resultados[h].blob));
+        resultados.zip = { blob: await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }),
+          nombre: `Documentos - ${MesCap(cuota.inicio)} ${cuota.inicio.getFullYear()}.zip` };
+        const nombres = { ent: 'Entregable', conf: 'Informe de Conformidad', eleva: 'Eleva Producto' };
+        const cont = $('zipResultado');
+        cont.innerHTML = `
+          <p class="mb-0" style="color:var(--mn-ok); font-weight:600;"><i class="bi bi-check-circle-fill"></i>
+            ${hechos.length} documento(s) generado(s): ${hechos.map(h => nombres[h]).join(' · ')}</p>
+          <button id="btnZip" class="btn btn-mn px-4 py-2"><i class="bi bi-file-earmark-zip"></i> Descargar ${esc(resultados.zip.nombre)}</button>
+          <p class="small text-muted mb-0">El ZIP trae los Word. Para el PDF: abre cada uno en Word → Archivo → Guardar como → PDF.</p>`;
+        cont.style.display = 'flex';
+        cont.classList.remove('entrando'); void cont.offsetWidth; cont.classList.add('entrando');
+        $('btnZip').addEventListener('click', () => descargarArchivo(resultados.zip.blob, resultados.zip.nombre));
+        mostrarResultados(hechos[0]);
+      }finally{
+        btn.classList.remove('cargando'); btn.innerHTML = html;
+        actualizarControles();
+      }
+    }
+    $('btnTodo').addEventListener('click', generarTodo);
+    $('btnSoloCuadros').addEventListener('click', () => {
+      $('btnGenerate').click();
+      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // muestra las pestañas de resultados (solo de los documentos ya generados) y abre una
+    function mostrarResultados(t){
+      $('docTabs').style.display = 'flex';
+      document.querySelectorAll('#docTabs .mn-seg-btn').forEach(b => { b.style.display = resultados[b.dataset.dtab] ? '' : 'none'; });
+      mostrarTab(t);
+      actualizarPasos();
+    }
+
+    // mensajes de error del paso 3 (se acumulan si se generan varios documentos)
+    function mensajeGen(html){
+      const g = $('genMsg');
+      if(!html){ g.innerHTML = ''; return; }
+      g.insertAdjacentHTML('beforeend', `<div class="small mt-2 text-center" style="color:var(--mn-red);"><i class="bi bi-x-circle-fill"></i> ${html}</div>`);
+    }
+
+    /* ===== Barra de pasos ===== */
+    function paso1Listo(){
+      const base = docs.tdr.parsed && docs.os.parsed;
+      return !!(base && ((docs.word.buffer && hayExcel()) || docs.conf.buffer || docs.eleva.buffer));
+    }
+    function actualizarPasos(){
+      const p1 = paso1Listo();
+      const p2 = p1 && (!docs.manual.file || /^https?:\/\/\S+$/i.test($('manualUrl').value.trim()));
+      const p3 = !!(resultados.ent || resultados.conf || resultados.eleva);
+      const hecho = { 1: p1, 2: p2, 3: p3 };
+      const actual = !p1 ? 1 : !p2 ? 2 : 3;
+      document.querySelectorAll('#mnPasos .mn-paso').forEach(a => {
+        const n = +a.dataset.paso;
+        a.classList.toggle('hecho', hecho[n]);
+        a.classList.toggle('actual', n === actual && !hecho[n]);
+      });
+    }
+    $('manualUrl').addEventListener('input', actualizarPasos);
 
     function mostrarResultadoCorto(tipo, cambios){
       const cont = $(tipo === 'conf' ? 'confPreview' : 'elevaPreview');
       const r = resultados[tipo];
-      const icono = c => c.falta ? '<i class="bi bi-exclamation-triangle-fill" style="color:#9A6700"></i>' : '<i class="bi bi-check-circle-fill" style="color:#1E7B45"></i>';
+      const icono = c => c.falta ? '<i class="bi bi-exclamation-triangle-fill" style="color:var(--mn-warn)"></i>' : '<i class="bi bi-check-circle-fill" style="color:var(--mn-ok)"></i>';
       const resumen = c => Array.isArray(c.despues) ? `${c.despues.length} actividades` : (c.falta ? 'no se encontró en el Word' : 'actualizado');
       const idDet = 'det_' + tipo, idBtn = 'ver_' + tipo, idDesc = 'desc_' + tipo;
       cont.innerHTML = `
@@ -2033,6 +2383,7 @@ if(typeof document !== 'undefined' && document.getElementById('docsCard')){
     }
 
     mostrarTab('ent');
+    pintarSlots(); actualizarControles();
   })();
 }
 
@@ -2040,5 +2391,5 @@ if(typeof module !== 'undefined'){
   module.exports = { pdfToItems, itemsToLines, parseTdr, parseOs, clasificarPdf, sugerirCuota,
     editarDocumento, leerDatosWord, paraText, MESES, diferencias, nombreCategoria, textosBloqueA,
     reemplazarImagen, tipoImagenPorNombre, ordenarDocumento, activarActualizarIndice, insertarBloqueB, FIGURAS_BLOQUE_B, llenarAnexos, actualizarEnlaceManual,
-    tipoWord, leerNumeros, editarConformidad, editarEleva, fechaLarga };
+    tipoWord, leerNumeros, editarConformidad, editarEleva, fechaLarga, insertarManual, mesesDistintos };
 }

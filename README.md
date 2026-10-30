@@ -4,25 +4,18 @@ Herramienta web (HTML + Bootstrap + SheetJS + Chart.js + ExcelJS) para validar, 
 analizar reportes de tickets exportados a Excel. No requiere backend ni instalación: todo el
 procesamiento ocurre en el navegador del usuario.
 
-## Cómo usarlo
+## Cómo usarlo (3 pasos)
 
-1. Abre `index.html` en cualquier navegador (o publícalo con GitHub Pages, ver abajo).
-2. Sube un archivo Excel (`.xlsx` / `.xls`) que contenga las columnas:
-   - `Título`
-   - `Estado`
-   - `Categoría`
-   - `Tipo`
-   - `Estadísticas - Hora de resolución`
-   - `ID`
-   - `Asignado a - Técnico`
-   - `Tiempo para resolver excedido`
+1. **Archivos**: suelta en una sola zona, juntos o uno por uno: el Excel de tickets (GLPI), el TdR y la
+   Orden de Servicio (PDF), los Word del Entregable, Conformidad, Eleva Producto y Manual del mes, y las
+   imágenes de la Ficha y de la Categorización. Cada archivo se identifica solo.
+2. **Datos**: porcentaje, entregable (cuota de la OS), enlace del manual y números/fechas de
+   Conformidad y Eleva Producto (se sugieren solos; se pueden cambiar).
+3. **Generar**: **GENERAR LOS 3 DOCUMENTOS (ZIP)** crea los Word y los empaqueta en
+   `Documentos - <Mes> <año>.zip`. También se pueden generar uno por uno o solo ver los cuadros y gráficos.
+   Para el PDF: abrir cada Word → Archivo → Guardar como → PDF.
 
-   Al cargar el archivo se descartan automáticamente las filas cuyo `ID` no es un número
-   (filas basura que GLPI genera cuando una descripción muy larga se desborda a la fila
-   siguiente). La herramienta avisa cuántas filas se descartaron.
-3. Elige un porcentaje en la lista desplegable y presiona **GENERAR CUADROS Y GRÁFICOS**.
-4. Navega entre las pestañas: Cuadros al 100%, Cuadros al % asignado, Pareto,
-   Gráficos al 100%, Tablas y Gráficos de %, y Anexos (descarga de Excel).
+La barra de pasos de arriba muestra en verde lo que ya está listo.
 
 ## Informe en Word (TdR + Orden de Servicio + Word)
 
@@ -60,6 +53,10 @@ Al presionar **PROCESAR INFORME** primero se generan los cuadros y gráficos con
   Anexos; también se actualiza el texto "Total de incidencias y solicitudes al X%".
 - **Manual del mes (Word)**: tiene su propia casilla; un .docx se reconoce como informe si su portada
   tiene "SERVICIO:" / "ENTREGABLE N°", y como manual en otro caso o si su nombre contiene "manual".
+- **Contenido del manual**: se borra el manual anterior (entre el enlace del manual y el siguiente
+  objetivo) y se inserta el Word del manual completo en una página nueva: textos, numeración,
+  imágenes, tablas e hipervínculos. Sus estilos se copian con el nombre "Manual - …" (no cambian
+  los del informe y sus títulos no entran al índice).
 - **Enlace del manual**: al subir el manual aparecen dos campos: la dirección (link) y el texto
   (se sugiere la primera línea del manual). Se coloca como hipervínculo debajo de
   "Link de acceso al manual – Mes de …", reemplazando el enlace anterior.
@@ -75,32 +72,25 @@ La lógica está en `informe.js`. Los PDF deben tener texto seleccionable (no es
 
 ## Archivos del repositorio
 
-| Archivo | Para qué sirve |
+| Archivo / carpeta | Para qué sirve |
 |---|---|
 | `index.html` | Página principal: carga del Excel, cuadros, gráficos y anexos |
-| `informe.js` | Lectura del TdR/OS y edición del informe Word |
+| `informe.js` | Lectura del TdR/OS y edición de los Word (entregable, conformidad, eleva producto) |
 | `logo.png` | Logo del Ministerio de Educación que se muestra en la cabecera |
+| `libs/` | Librerías (Bootstrap, SheetJS, ExcelJS, Chart.js, pdf.js, JSZip) incluidas en el repositorio: la página funciona aunque la red bloquee sitios externos |
 | `README.md` | Este documento |
 
-Los tres primeros deben estar en la **misma carpeta** (la raíz del repositorio).
+Todo debe estar en la **raíz** del repositorio (la carpeta `libs/` con su subcarpeta `fonts/`).
 
-## Informe de Conformidad y Eleva Producto
+## Detalles útiles
 
-En la sección **DOCUMENTOS** hay tres pestañas: **Entregable · Informe de Conformidad · Eleva Producto**.
-El TdR y la OS se suben una sola vez y sirven para las tres. Cada Word se reconoce por su título
-("INFORME TÉCNICO N.º …" = Conformidad, "INFORME DE SERVICIO Nº …" = Eleva Producto).
-
-| Dato | Conformidad | Eleva Producto | Origen |
-|---|---|---|---|
-| N.º del documento | Informe Técnico N.º | Informe de Servicio Nº …-año/WJLY | Siguiente al del Word subido (editable) |
-| Referencia / Asunto | Informe de Servicio N.º + OS | OS | Campo de la página + N.º de la OS (PDF) |
-| Fecha | "29 de octubre de 2026" | "San Borja, 29 de octubre de 2026" | Fecha de hoy (editable) |
-| Nombre del servicio | En mayúsculas | En mayúsculas, entre comillas | Denominación del TdR |
-| Entregable | — | Texto del entregable elegido | RESULTADOS ESPERADOS del TdR |
-| Actividades | Tabla (10 puntos) | Viñetas (10 puntos) | Características + Actividades del TdR |
-
-El N.º de Informe de Servicio es el mismo en ambas pestañas (se sincroniza). Archivos de salida:
-`Informe de conformidad - <Mes> <año>.docx` y `ELEVA PRODUCTO - <Mes> <año>.docx`.
+- **Imágenes**: el nombre del archivo debe contener `ficha` (Ficha de evaluación) o
+  `categorizacion` (Categorización en GLPI).
+- **Aviso de mes**: si el manual o su título mencionan un mes distinto al del entregable
+  (por ejemplo "SET 2026" en un entregable de octubre), la página lo avisa antes de descargar.
+- **Porcentajes**: enteros en textos y tablas; incidencias + solicitudes siempre suman 100%.
+- **Tema claro/oscuro**: sigue la configuración de Windows/Mac; con el interruptor ☀/🌙 de la esquina
+  superior derecha se elige manualmente (se recuerda en ese navegador).
 
 ## Publicarlo con GitHub Pages (gratis, sin servidor)
 
@@ -118,12 +108,11 @@ el código siempre es visible vía "Ver código fuente" o las herramientas de de
 una limitación inherente a cualquier app web del lado del cliente, no algo particular de este
 proyecto.
 
-## Dependencias externas (CDN — no requieren instalación)
+## Librerías (carpeta libs/, no requieren instalación)
 
-- Bootstrap 5.3.3 + Bootstrap Icons 1.11.3
+- (incluidas en `libs/`) Bootstrap 5.3.3 + Bootstrap Icons 1.11.3
 - SheetJS (xlsx) 0.18.5 — lectura de Excel
 - Chart.js 4.5.1 + chartjs-plugin-datalabels 2.2.0 — gráfico de Pareto
 - ExcelJS 4.4.0 — generación de los Excel de Anexos con estilo
 - pdf.js 3.11.174 — lectura del TdR y la Orden de Servicio
 - JSZip 3.10.1 — apertura y guardado del Word (.docx)
-- Google Fonts (Poppins, Inter)
