@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Validador de Tickets para Entregable - MINEDU</title>
 
-<!-- librerías incluidas en la carpeta libs/ (funcionan aunque la red bloquee sitios externos) -->
-<link href="libs/bootstrap.min.css" rel="stylesheet">
+<!-- librerías: primero se buscan en la carpeta libs/ del repositorio; si no están, se cargan desde internet (cdnjs) -->
+<link href="libs/bootstrap.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css'">
 <script>
   /* Tema claro/oscuro.
      - Por defecto sigue la configuración de Windows/Mac.
@@ -29,7 +29,7 @@
     };
   })();
 </script>
-<link href="libs/bootstrap-icons.min.css" rel="stylesheet">
+<link href="libs/bootstrap-icons.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css'">
 
 <style>
   /* Diseño "vidrio" estilo Apple: fondo con color suave, tarjetas translúcidas con desenfoque,
@@ -754,12 +754,19 @@
 </div>
 
 <script src="libs/bootstrap.bundle.min.js"></script>
+<script>window.bootstrap || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"><\/script>'));</script>
 <script src="libs/xlsx.full.min.js"></script>
+<script>window.XLSX || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>'));</script>
 <script src="libs/exceljs.min.js"></script>
+<script>window.ExcelJS || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"><\/script>'));</script>
 <script src="libs/chart.umd.min.js"></script>
+<script>window.Chart || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"><\/script>'));</script>
 <script src="libs/chartjs-plugin-datalabels.min.js"></script>
+<script>window.ChartDataLabels || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"><\/script>'));</script>
 <script src="libs/pdf.min.js"></script>
+<script>window.pdfjsLib || (window.PDF_WORKER_SRC=window.PDF_WORKER_SRC||'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js', document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"><\/script>'));</script>
 <script src="libs/jszip.min.js"></script>
+<script>window.JSZip || (document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>'));</script>
 
 <script>
 const REQUIRED_COLUMNS = ["Título","Estado","Categoría","Tipo","Estadísticas - Hora de resolución","ID","Asignado a - Técnico","Tiempo para resolver excedido"];
