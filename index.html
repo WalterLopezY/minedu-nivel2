@@ -518,6 +518,73 @@
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .mn-card, .mn-header, .mn-fab{ background:rgba(255,255,255,.95); }
   }
+
+  /* ================= GENERADOR DE TICKETS (pestaña 7) ================= */
+  .mn-modo{ margin-bottom:22px; }
+  .mn-modo .mn-seg-btn{ font-size:14px; padding:.55rem 1.1rem; }
+  #genTickets{ display:none; }
+  body.modo-gen #genTickets{ display:block; }
+  body.modo-gen #mnPasos, body.modo-gen #docsCard, body.modo-gen #resultsSection, body.modo-gen .mn-fab{ display:none !important; }
+  .gen-form{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px 14px; }
+  .gen-f-ancho{ grid-column:1 / -1; }
+  .gen-f-medio{ grid-column:span 1; }
+  .gen-f-motivo{ grid-column:span 2; }
+  @media (max-width:720px){ .gen-form{ grid-template-columns:1fr; } .gen-f-motivo{ grid-column:auto; } }
+  .gen-ajustes{ margin-top:16px; padding:10px 14px; border-radius:14px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); }
+  .gen-ajustes summary{ cursor:pointer; font-weight:600; font-size:14px; color:var(--mn-muted); }
+  .gen-ajustes[open] summary{ color:var(--mn-ink); }
+  .gen-barra{ display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+  .gen-todo{ display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; }
+  .gen-estrella{ color:#E3A008; font-size:11px; }
+  .gen-lista{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
+  .gen-grupo{ padding:12px 14px; border-radius:16px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); box-shadow:0 4px 12px rgba(15,23,42,.05); }
+  .gen-grupo-tit{ display:flex; align-items:center; gap:8px; font-weight:700; color:var(--mn-blue); margin-bottom:6px; cursor:pointer; }
+  :root[data-theme="dark"] .gen-grupo-tit{ color:#7CC4E8; }
+  .gen-item{ display:flex; align-items:flex-start; gap:8px; padding:5px 6px; border-radius:10px; font-size:14px; cursor:pointer; }
+  .gen-item:hover{ background:rgba(21,96,130,.07); }
+  .gen-item .form-check-input{ margin-top:3px; flex:0 0 auto; }
+  .gen-item span{ flex:1; }
+  .gen-borrar{ border:none; background:transparent; color:var(--mn-muted); padding:0 4px; border-radius:6px; }
+  .gen-borrar:hover{ color:var(--mn-red); background:rgba(200,16,46,.08); }
+  .gen-envio{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:14px 16px; border-radius:16px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); }
+  .gen-correo{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:14px; border:1px solid var(--mn-line); margin-bottom:8px; background:var(--glass-fuerte); transition:background .3s, border-color .3s; }
+  .gen-correo.abierto{ border-color:rgba(30,123,69,.45); background:rgba(30,123,69,.07); }
+  .gen-correo.abierto .gen-correo-num{ background:var(--mn-ok); }
+  .gen-correo-num{ flex:0 0 auto; width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; color:#fff; background:var(--mn-blue); }
+  .gen-correo-txt{ flex:1; min-width:0; }
+  .gen-correo-asunto{ font-weight:600; font-size:14px; word-break:break-word; }
+  .gen-correo-btns{ display:flex; gap:6px; flex-wrap:wrap; }
+  .gen-cuerpo-prev{ margin-top:10px; font-size:14px; }
+  .gen-cuerpo-prev summary{ cursor:pointer; color:var(--mn-muted); font-weight:600; }
+  .gen-cuerpo-prev pre{ white-space:pre-wrap; background:var(--glass-fuerte); border:1px solid var(--mn-line); border-radius:12px; padding:10px 12px; margin:8px 0; font-family:var(--fuente); font-size:13.5px; color:var(--mn-ink); }
+  .gen-speeches{ display:grid; grid-template-columns:repeat(auto-fill, minmax(440px, 1fr)); gap:16px; }
+  @media (max-width:560px){ .gen-speeches{ grid-template-columns:1fr; } .gen-lista{ grid-template-columns:1fr; } }
+  .gen-speech{ padding:14px; border-radius:18px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); box-shadow:0 6px 18px rgba(15,23,42,.07); }
+  .gen-speech-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .gen-campo{ margin-top:10px; }
+  .gen-campo-tit{ font-size:12px; font-weight:700; color:#1B6F96; text-decoration:underline; letter-spacing:.01em; margin-bottom:4px; }
+  :root[data-theme="dark"] .gen-campo-tit{ color:#7CC4E8; }
+  .gen-campo-fila{ display:flex; align-items:flex-start; gap:8px; }
+  .gen-campo-fila textarea{ flex:1; font-size:13.5px; field-sizing:content; min-height:2.6em; }
+  .gen-campo-fila .gen-sino{ max-width:110px; }
+  .gen-campo-fila .btn{ flex:0 0 auto; }
+  .btn-azul{ color:#fff; border:1px solid rgba(255,255,255,.25); background:linear-gradient(180deg, #1B7FB0, var(--mn-blue)); box-shadow:0 6px 14px rgba(21,96,130,.28); }
+  .btn-azul:hover, .btn-azul:focus-visible{ color:#fff; background:linear-gradient(180deg, #2290C4, #1B6F96); transform:translateY(-1px); }
+  .gen-ok{ color:var(--mn-ok); font-weight:600; }
+  .gen-aviso-usu{ margin-top:10px; font-size:13.5px; color:var(--mn-ok); font-weight:600; }
+  .gen-tabla-wrap{ max-height:420px; overflow:auto; }
+  table.gen-tabla{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.gen-tabla th{ position:sticky; top:0; background:var(--mn-blue); color:#fff; font-weight:600; padding:7px 10px; text-align:left; }
+  table.gen-tabla td{ padding:7px 10px; border-bottom:1px solid var(--mn-line); vertical-align:middle; }
+  table.gen-tabla tbody tr:nth-child(even){ background:rgba(192,230,245,.25); }
+  .gen-propio{ margin:-4px 0 4px; }
+  .gen-link{ border:none; background:none; padding:0; font-size:12.5px; color:var(--mn-blue); text-decoration:underline; }
+  :root[data-theme="dark"] .gen-link{ color:#7CC4E8; }
+  .gen-speech{ display:flex; flex-direction:column; }
+  .gen-speech > .btn-azul{ margin-top:auto; }
+  .gen-speech > .small.text-muted.mt-1{ margin-bottom:14px; }
+  .gen-speech textarea{ font-size:13.5px; field-sizing:content; }
+  .btn.copiado{ color:var(--mn-ok) !important; border-color:rgba(30,123,69,.4) !important; }
 </style>
 </head>
 <body>
@@ -538,6 +605,13 @@
 </div>
 
 <div class="mn-container">
+
+  <!-- Selector de modo: Entregable (pasos 1-2-3 y pestañas) / Generador de Tickets -->
+  <div class="mn-seg mn-modo" id="mnModo" role="tablist">
+    <span class="mn-seg-ind" aria-hidden="true"></span>
+    <button class="mn-seg-btn active" data-modo="ent" role="tab"><i class="bi bi-journal-check"></i> Validador del Entregable</button>
+    <button class="mn-seg-btn" data-modo="gen" role="tab"><i class="bi bi-scissors"></i> Generador de Tickets</button>
+  </div>
 
   <!-- Barra de pasos: ① Archivos → ② Datos → ③ Generar -->
   <nav class="mn-pasos" id="mnPasos" aria-label="Pasos">
@@ -749,6 +823,169 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ================= GENERADOR DE TICKETS (pestaña 7) =================
+       Se muestra al elegir "Generador de Tickets" arriba. La lógica está en generador.js -->
+  <div id="genTickets">
+
+    <section class="mn-card">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">1</span> DATOS DEL TICKET PADRE Y DEL USUARIO</p>
+      <div class="gen-form">
+        <div class="gen-f-padre">
+          <label class="form-label small text-muted mb-1" for="genPadre">N.º de ticket padre</label>
+          <input id="genPadre" class="form-control mn-input" inputmode="numeric" placeholder="123456" autocomplete="off">
+        </div>
+        <div class="gen-f-motivo">
+          <label class="form-label small text-muted mb-1" for="genMotivo">Caso encontrado (motivo)</label>
+          <select id="genMotivo" class="form-select mn-select"></select>
+        </div>
+        <div id="genMotivoOtroWrap" class="gen-f-ancho" style="display:none;">
+          <label class="form-label small text-muted mb-1" for="genMotivoOtro">Escribe el caso encontrado</label>
+          <input id="genMotivoOtro" class="form-control mn-input" placeholder="Se reportó que el equipo del usuario … ">
+        </div>
+        <div class="gen-f-medio">
+          <label class="form-label small text-muted mb-1" for="genNombre">Nombres completos</label>
+          <input id="genNombre" class="form-control mn-input" placeholder="Manuel Rumiche" autocomplete="off" list="genDlNombres">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genUsuario">Usuario</label>
+          <input id="genUsuario" class="form-control mn-input" placeholder="MRUMICHE" autocomplete="off" list="genDlUsuarios">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genContacto">Anexo / Celular <span class="text-muted">(opcional)</span></label>
+          <input id="genContacto" class="form-control mn-input" autocomplete="off">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genSede">Sede</label>
+          <input id="genSede" class="form-control mn-input" autocomplete="off" list="genDlSedes">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genPiso">Piso</label>
+          <input id="genPiso" class="form-control mn-input" autocomplete="off" list="genDlPisos">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genArea">Área</label>
+          <input id="genArea" class="form-control mn-input" autocomplete="off" list="genDlAreas">
+        </div>
+      </div>
+      <div id="genUsuarioAviso" class="gen-aviso-usu" style="display:none;"></div>
+      <!-- listas de autocompletado: se llenan con tu base de usuarios -->
+      <datalist id="genDlUsuarios"></datalist><datalist id="genDlNombres"></datalist>
+      <datalist id="genDlSedes"></datalist><datalist id="genDlPisos"></datalist><datalist id="genDlAreas"></datalist>
+      <p class="small text-muted mt-2 mb-0"><i class="bi bi-lightbulb"></i> Escribe el usuario (o el nombre) de alguien que ya registraste y los demás datos se completan solos.</p>
+      <details class="gen-ajustes">
+        <summary><i class="bi bi-gear"></i> Cuenta de operador y destino (se recuerdan en este navegador)</summary>
+        <div class="gen-form mt-2">
+          <div class="gen-f-medio">
+            <label class="form-label small text-muted mb-1" for="genCuenta">Mi cuenta (remitente)</label>
+            <input id="genCuenta" type="email" class="form-control mn-input">
+          </div>
+          <div class="gen-f-medio">
+            <label class="form-label small text-muted mb-1" for="genDestino">Mesa de servicios (destino)</label>
+            <input id="genDestino" type="email" class="form-control mn-input">
+          </div>
+          <div class="gen-f-medio">
+            <label class="form-label small text-muted mb-1" for="genWeb">Dirección de Outlook web</label>
+            <input id="genWeb" type="url" class="form-control mn-input">
+          </div>
+        </div>
+        <p class="small text-muted mb-0 mt-2">Al final del correo se escribe: "Regularizar con <strong id="genAlias"></strong>".</p>
+      </details>
+    </section>
+
+    <section class="mn-card">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">2</span> ATENCIONES A GENERAR (TICKETS JASON)</p>
+      <div class="gen-barra">
+        <label class="gen-todo"><input id="genTodo" type="checkbox" class="form-check-input"> Seleccionar todo</label>
+        <button id="genHabituales" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-star-fill gen-estrella"></i> Solo habituales</button>
+        <span id="genContador" class="small text-muted ms-auto"></span>
+      </div>
+      <div id="genLista" class="gen-lista"></div>
+
+      <details class="gen-ajustes">
+        <summary><i class="bi bi-plus-circle"></i> Agregar una atención que no está en la lista</summary>
+        <div class="gen-form mt-2">
+          <div class="gen-f-ancho">
+            <label class="form-label small text-muted mb-1" for="genNuevoTitulo">Título (va en el asunto del correo)</label>
+            <input id="genNuevoTitulo" class="form-control mn-input" placeholder="Ej.: Reinstalación de impresora de red">
+          </div>
+          <div class="gen-f-ancho">
+            <label class="form-label small text-muted mb-1" for="genNuevoHallazgo">Qué se encontró <span class="text-muted">(opcional · va en CASO ENCONTRADO después de "Al revisar,")</span></label>
+            <input id="genNuevoHallazgo" class="form-control mn-input" placeholder="Ej.: la impresora de red no figuraba instalada en el equipo">
+          </div>
+          <div class="gen-f-ancho">
+            <label class="form-label small text-muted mb-1" for="genNuevaAccion">Acción realizada <span class="text-muted">(opcional · si lo dejas vacío se arma uno básico que luego puedes mejorar)</span></label>
+            <textarea id="genNuevaAccion" class="form-control mn-input" rows="2" placeholder="Se … , lo que …"></textarea>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-2">
+          <button id="genAgregar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-plus-lg"></i> Agregar a la lista</button>
+          <span id="genNuevoMsg" class="small" style="color:var(--mn-red);"></span>
+        </div>
+        <p class="small text-muted mb-0 mt-2">Queda guardada en este navegador, en el grupo "Agregadas por mí". Para quitarla usa la <i class="bi bi-x-lg"></i>.</p>
+      </details>
+
+      <div class="mn-generar mt-3">
+        <button id="genBtnGenerar" type="button" class="btn btn-mn px-5 py-2"><i class="bi bi-lightning-charge-fill"></i> GENERAR CORREOS Y SPEECHES</button>
+        <button id="genBtnLimpiar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Nuevo bloque</button>
+      </div>
+      <div id="genMsg"></div>
+    </section>
+
+    <div id="genResultados" style="display:none;">
+      <section class="mn-card">
+        <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">3</span> ENVIAR CORREOS A MESA DE SERVICIOS</p>
+        <p class="small text-muted mb-2" id="genBloqueInfo"></p>
+        <div class="gen-envio">
+          <div>
+            <p class="mb-1"><strong><i class="bi bi-globe2"></i> Desde cualquier computadora (Outlook web)</strong></p>
+            <p class="small text-muted mb-0">Cada clic abre el siguiente correo ya lleno en Outlook web (con tu sesión iniciada). Solo revisas y das <strong>Enviar</strong>. Los abiertos quedan marcados en verde.</p>
+          </div>
+          <button id="genSiguiente" type="button" class="btn btn-mn"><i class="bi bi-send-fill"></i> <span id="genSiguienteTxt">ABRIR SIGUIENTE CORREO</span></button>
+        </div>
+        <div id="genCorreos" class="mt-3"></div>
+        <details class="gen-ajustes">
+          <summary><i class="bi bi-rocket-takeoff"></i> Enviar todos de golpe (solo en una PC con Outlook clásico)</summary>
+          <p class="small text-muted mt-2 mb-2">Descarga el archivo, haz doble clic y elige <strong>S</strong> para enviar o <strong>B</strong> para dejarlos como borradores. Usa la sesión de Outlook abierta: no pide contraseña.</p>
+          <button id="genBtnScript" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Descargar envío automático (.cmd)</button>
+        </details>
+      </section>
+
+      <section class="mn-card">
+        <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">4</span> SPEECH DE CIERRE PARA GLPI</p>
+        <p class="small text-muted">Un speech por ticket. Si editas el caso o la acción, se guarda como <strong>tu speech</strong> para esa atención y ese motivo, y se usará la próxima vez. <strong>Copiar speech</strong> copia todo con formato: en el cuadro de GLPI presiona <strong>Ctrl+A</strong> y luego <strong>Ctrl+V</strong>.</p>
+        <div id="genSpeeches" class="gen-speeches"></div>
+      </section>
+    </div>
+
+    <section class="mn-card" id="genBase">
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">5</span> MI BASE DE DATOS</p>
+      <div class="gen-barra">
+        <span id="genBaseResumen" class="small text-muted"></span>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+          <button id="genExportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-down"></i> Exportar respaldo</button>
+          <button id="genImportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-up"></i> Importar respaldo</button>
+          <input id="genImportarInput" type="file" accept=".json,application/json" style="display:none;">
+        </div>
+      </div>
+      <p class="small text-muted">Se guarda sola en este navegador. Para usarla en otra PC: <strong>Exportar respaldo</strong>, guarda el archivo en tu OneDrive institucional y en la otra PC usa <strong>Importar respaldo</strong> (se combina, no borra nada).</p>
+      <div id="genBaseMsg" class="small mb-2"></div>
+      <details class="gen-ajustes" open>
+        <summary><i class="bi bi-clock-history"></i> Historial de bloques (para recuperar los speeches al cerrar)</summary>
+        <input id="genBuscarHist" class="form-control mn-input form-control-sm my-2" placeholder="Buscar por ticket padre, usuario o nombre…">
+        <div id="genHistorial" class="gen-tabla-wrap"></div>
+      </details>
+      <details class="gen-ajustes">
+        <summary><i class="bi bi-chat-square-quote"></i> Mis speeches guardados</summary>
+        <div id="genMisSpeeches" class="gen-tabla-wrap mt-2"></div>
+      </details>
+      <details class="gen-ajustes">
+        <summary><i class="bi bi-people"></i> Usuarios registrados</summary>
+        <input id="genBuscarUsu" class="form-control mn-input form-control-sm my-2" placeholder="Buscar por usuario, nombre, área o sede…">
+        <div id="genUsuariosTabla" class="gen-tabla-wrap"></div>
+      </details>
+    </section>
   </div>
 
 </div>
@@ -1837,5 +2074,7 @@ window.addEventListener('scroll', () => mnHeader.classList.toggle('compacta', wi
 </script>
 <!-- lógica del informe Word (TdR + OS + Word) -->
 <script src="informe.js"></script>
+<!-- generador de tickets Jason (pestaña 7) -->
+<script src="generador.js"></script>
 </body>
 </html>
