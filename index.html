@@ -584,6 +584,21 @@
   .gen-speech > .btn-azul{ margin-top:auto; }
   .gen-speech > .small.text-muted.mt-1{ margin-bottom:14px; }
   .gen-speech textarea{ font-size:13.5px; field-sizing:content; }
+  .gen-prueba{ margin:0 0 12px; padding:10px 14px; border-radius:14px; background:rgba(255,193,7,.16); border:1px solid rgba(255,193,7,.55); font-size:14px; font-weight:600; }
+  .gen-listo{ margin-top:14px; padding:10px 14px; border-radius:14px; background:rgba(30,123,69,.10); border:1px solid rgba(30,123,69,.35); color:var(--mn-ok); font-weight:600; font-size:14px; }
+  .gen-plantillas-wrap{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .gen-plantillas{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .gen-plant{ display:inline-flex; align-items:center; gap:2px; }
+  #genTickets{ position:relative; }
+  .gen-sugerencias{ position:absolute; z-index:50; max-height:360px; overflow:auto; padding:6px; border-radius:14px; background:var(--mn-card, #fff); border:1px solid var(--mn-line); box-shadow:0 14px 34px rgba(15,23,42,.18); }
+  :root[data-theme="dark"] .gen-sugerencias{ background:#1b2433; }
+  .gen-sug{ display:flex; flex-direction:column; align-items:flex-start; width:100%; text-align:left; border:none; background:transparent; padding:7px 10px; border-radius:10px; color:var(--mn-ink); }
+  .gen-sug:hover, .gen-sug.activo{ background:rgba(21,96,130,.10); }
+  .gen-sug-usu{ font-size:12px; font-weight:700; color:var(--mn-blue); margin-left:4px; }
+  .gen-bloque-base{ margin:12px 0; padding:12px 16px; border-radius:16px; background:var(--glass-fuerte); border:1px solid var(--glass-borde); }
+  .gen-archivo{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .gen-estado{ font-size:14px; }
+  .gen-estado.verde{ color:var(--mn-ok); } .gen-estado.ambar{ color:#B7791F; } .gen-estado.gris{ color:var(--mn-muted); }
   .btn.copiado{ color:var(--mn-ok) !important; border-color:rgba(30,123,69,.4) !important; }
 </style>
 </head>
@@ -846,34 +861,38 @@
         </div>
         <div class="gen-f-medio">
           <label class="form-label small text-muted mb-1" for="genNombre">Nombres completos</label>
-          <input id="genNombre" class="form-control mn-input" placeholder="Manuel Rumiche" autocomplete="off" list="genDlNombres">
+          <input id="genNombre" class="form-control mn-input" placeholder="Cristina Vilela Zarate" autocomplete="off">
         </div>
         <div>
           <label class="form-label small text-muted mb-1" for="genUsuario">Usuario</label>
-          <input id="genUsuario" class="form-control mn-input" placeholder="MRUMICHE" autocomplete="off" list="genDlUsuarios">
+          <input id="genUsuario" class="form-control mn-input" placeholder="CVILELA" autocomplete="off">
         </div>
         <div>
-          <label class="form-label small text-muted mb-1" for="genContacto">Anexo / Celular <span class="text-muted">(opcional)</span></label>
-          <input id="genContacto" class="form-control mn-input" autocomplete="off">
+          <label class="form-label small text-muted mb-1" for="genTrato">Se escribe como</label>
+          <select id="genTrato" class="form-select mn-select"><option value="Usuario">Usuario (él)</option><option value="Usuaria">Usuaria (ella)</option></select>
         </div>
         <div>
           <label class="form-label small text-muted mb-1" for="genSede">Sede</label>
-          <input id="genSede" class="form-control mn-input" autocomplete="off" list="genDlSedes">
-        </div>
-        <div>
-          <label class="form-label small text-muted mb-1" for="genPiso">Piso</label>
-          <input id="genPiso" class="form-control mn-input" autocomplete="off" list="genDlPisos">
+          <input id="genSede" class="form-control mn-input" placeholder="Sede Central" autocomplete="off" list="genDlSedes">
         </div>
         <div>
           <label class="form-label small text-muted mb-1" for="genArea">Área</label>
-          <input id="genArea" class="form-control mn-input" autocomplete="off" list="genDlAreas">
+          <input id="genArea" class="form-control mn-input" placeholder="Disertpa" autocomplete="off" list="genDlAreas">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genPiso">Piso <span class="text-muted">(solo el número)</span></label>
+          <input id="genPiso" class="form-control mn-input" placeholder="9" autocomplete="off" list="genDlPisos">
+        </div>
+        <div>
+          <label class="form-label small text-muted mb-1" for="genContacto">Anexo <span class="text-muted">(opcional)</span></label>
+          <input id="genContacto" class="form-control mn-input" placeholder="21222" autocomplete="off">
         </div>
       </div>
       <div id="genUsuarioAviso" class="gen-aviso-usu" style="display:none;"></div>
       <!-- listas de autocompletado: se llenan con tu base de usuarios -->
       <datalist id="genDlUsuarios"></datalist><datalist id="genDlNombres"></datalist>
       <datalist id="genDlSedes"></datalist><datalist id="genDlPisos"></datalist><datalist id="genDlAreas"></datalist>
-      <p class="small text-muted mt-2 mb-0"><i class="bi bi-lightbulb"></i> Escribe el usuario (o el nombre) de alguien que ya registraste y los demás datos se completan solos.</p>
+      <p class="small text-muted mt-2 mb-0"><i class="bi bi-lightbulb"></i> En <strong>Nombres</strong> o <strong>Usuario</strong> escribe cualquier parte del nombre o apellido y elige a la persona de la lista (sale de tu base y del directorio MINEDU).</p>
       <details class="gen-ajustes">
         <summary><i class="bi bi-gear"></i> Cuenta de operador y destino (se recuerdan en este navegador)</summary>
         <div class="gen-form mt-2">
@@ -895,39 +914,42 @@
     </section>
 
     <section class="mn-card">
-      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">2</span> ATENCIONES A GENERAR (TICKETS JASON)</p>
+      <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">2</span> TICKETS HIJO A GENERAR (TICKETS JASON)</p>
+      <div class="gen-plantillas-wrap">
+        <span class="small text-muted fw-semibold">Plantilla según el ticket padre:</span>
+        <div id="genPlantillas" class="gen-plantillas"></div>
+      </div>
       <div class="gen-barra">
         <label class="gen-todo"><input id="genTodo" type="checkbox" class="form-check-input"> Seleccionar todo</label>
-        <button id="genHabituales" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-star-fill gen-estrella"></i> Solo habituales</button>
         <span id="genContador" class="small text-muted ms-auto"></span>
       </div>
       <div id="genLista" class="gen-lista"></div>
 
       <details class="gen-ajustes">
-        <summary><i class="bi bi-plus-circle"></i> Agregar una atención que no está en la lista</summary>
+        <summary><i class="bi bi-plus-circle"></i> Agregar un ticket hijo que no está en la lista</summary>
         <div class="gen-form mt-2">
-          <div class="gen-f-ancho">
+          <div class="gen-f-motivo">
             <label class="form-label small text-muted mb-1" for="genNuevoTitulo">Título (va en el asunto del correo)</label>
-            <input id="genNuevoTitulo" class="form-control mn-input" placeholder="Ej.: Reinstalación de impresora de red">
+            <input id="genNuevoTitulo" class="form-control mn-input" placeholder="Ej.: Configuración de escáner">
+          </div>
+          <div>
+            <label class="form-label small text-muted mb-1" for="genNuevoTipo">Tipo</label>
+            <select id="genNuevoTipo" class="form-select mn-select"><option>Solicitud</option><option>Incidente</option></select>
           </div>
           <div class="gen-f-ancho">
-            <label class="form-label small text-muted mb-1" for="genNuevoHallazgo">Qué se encontró <span class="text-muted">(opcional · va en CASO ENCONTRADO después de "Al revisar,")</span></label>
-            <input id="genNuevoHallazgo" class="form-control mn-input" placeholder="Ej.: la impresora de red no figuraba instalada en el equipo">
-          </div>
-          <div class="gen-f-ancho">
-            <label class="form-label small text-muted mb-1" for="genNuevaAccion">Acción realizada <span class="text-muted">(opcional · si lo dejas vacío se arma uno básico que luego puedes mejorar)</span></label>
-            <textarea id="genNuevaAccion" class="form-control mn-input" rows="2" placeholder="Se … , lo que …"></textarea>
+            <label class="form-label small text-muted mb-1" for="genNuevaNota">Qué hiciste, con tus palabras <span class="text-muted">(opcional)</span></label>
+            <textarea id="genNuevaNota" class="form-control mn-input" rows="2" placeholder="Ej.: se configura escáner, debido a que se solicitó configuración de impresora y también es necesaria para la continuación de sus labores"></textarea>
           </div>
         </div>
-        <div class="d-flex align-items-center gap-2 mt-2">
+        <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
           <button id="genAgregar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-plus-lg"></i> Agregar a la lista</button>
-          <span id="genNuevoMsg" class="small" style="color:var(--mn-red);"></span>
+          <span id="genNuevoMsg" class="small text-muted"></span>
         </div>
-        <p class="small text-muted mb-0 mt-2">Queda guardada en este navegador, en el grupo "Agregadas por mí". Para quitarla usa la <i class="bi bi-x-lg"></i>.</p>
+        <p class="small text-muted mb-0 mt-2">Se crea solo un speech formal (acción, beneficio y resultado). Queda guardado en el grupo "Agregados por mí"; para quitarlo usa la <i class="bi bi-x-lg"></i>.</p>
       </details>
 
       <div class="mn-generar mt-3">
-        <button id="genBtnGenerar" type="button" class="btn btn-mn px-5 py-2"><i class="bi bi-lightning-charge-fill"></i> GENERAR CORREOS Y SPEECHES</button>
+        <button id="genBtnGenerar" type="button" class="btn btn-mn px-5 py-2"><i class="bi bi-lightning-charge-fill"></i> PREPARAR CORREOS Y SPEECHES</button>
         <button id="genBtnLimpiar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Nuevo bloque</button>
       </div>
       <div id="genMsg"></div>
@@ -937,12 +959,13 @@
       <section class="mn-card">
         <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">3</span> ENVIAR CORREOS A MESA DE SERVICIOS</p>
         <p class="small text-muted mb-2" id="genBloqueInfo"></p>
+        <div id="genModoPrueba" class="gen-prueba" style="display:none;"></div>
         <div class="gen-envio">
           <div>
             <p class="mb-1"><strong><i class="bi bi-globe2"></i> Desde cualquier computadora (Outlook web)</strong></p>
             <p class="small text-muted mb-0">Cada clic abre el siguiente correo ya lleno en Outlook web (con tu sesión iniciada). Solo revisas y das <strong>Enviar</strong>. Los abiertos quedan marcados en verde.</p>
           </div>
-          <button id="genSiguiente" type="button" class="btn btn-mn"><i class="bi bi-send-fill"></i> <span id="genSiguienteTxt">ABRIR SIGUIENTE CORREO</span></button>
+          <a id="genSiguiente" class="btn btn-mn" href="#" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> <span id="genSiguienteTxt">ABRIR SIGUIENTE CORREO</span></a>
         </div>
         <div id="genCorreos" class="mt-3"></div>
         <details class="gen-ajustes">
@@ -964,12 +987,41 @@
       <div class="gen-barra">
         <span id="genBaseResumen" class="small text-muted"></span>
         <div class="ms-auto d-flex gap-2 flex-wrap">
-          <button id="genExportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-down"></i> Exportar respaldo</button>
-          <button id="genImportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-up"></i> Importar respaldo</button>
-          <input id="genImportarInput" type="file" accept=".json,application/json" style="display:none;">
+          <button id="genExcel" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</button>
         </div>
       </div>
-      <p class="small text-muted">Se guarda sola en este navegador. Para usarla en otra PC: <strong>Exportar respaldo</strong>, guarda el archivo en tu OneDrive institucional y en la otra PC usa <strong>Importar respaldo</strong> (se combina, no borra nada).</p>
+
+      <div class="gen-bloque-base">
+        <p class="mb-1 fw-semibold"><i class="bi bi-cloud"></i> Guardado automático en OneDrive</p>
+        <div id="genArchivoEstado" class="gen-archivo"></div>
+        <p class="small text-muted mt-2 mb-0">
+          <strong>Primera vez:</strong> «Crear archivo de base» y guárdalo dentro de tu carpeta de <strong>OneDrive</strong>. Desde ahí todo se guarda solo.<br>
+          <strong>En otra PC:</strong> «Abrir mi base existente» y elige ese mismo archivo en OneDrive; se combina con lo que haya en esa PC.<br>
+          <strong>Si la PC no tiene OneDrive sincronizado:</strong> usa el respaldo manual de abajo (descarga el archivo desde OneDrive web, impórtalo y al terminar expórtalo y súbelo de nuevo).
+        </p>
+        <details class="mt-2">
+          <summary class="small text-muted">Respaldo manual</summary>
+          <div class="d-flex gap-2 flex-wrap mt-2">
+            <button id="genExportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-down"></i> Exportar respaldo (.json)</button>
+            <button id="genImportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-arrow-up"></i> Importar respaldo (.json)</button>
+            <input id="genImportarInput" type="file" accept=".json,application/json" style="display:none;">
+          </div>
+        </details>
+      </div>
+
+      <div class="gen-bloque-base">
+        <p class="mb-1 fw-semibold"><i class="bi bi-journal-bookmark"></i> Directorio MINEDU (libreta de direcciones de Outlook)</p>
+        <div id="genDirEstado" class="mb-2"></div>
+        <ol class="small text-muted mb-2 ps-3">
+          <li>En una PC con <strong>Outlook clásico</strong> abierto: <button id="genDirScript" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Descargar exportador (.cmd)</button> y dale doble clic. Al terminar abre la carpeta con <code>directorio_minedu.csv</code>.</li>
+          <li><button id="genDirImportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-upload"></i> Importar directorio (.csv)</button> y elige ese archivo.</li>
+          <li>Listo: en <strong>Nombres</strong> o <strong>Usuario</strong> escribe cualquier parte del nombre o apellido y elige a la persona.</li>
+        </ol>
+        <input id="genDirInput" type="file" accept=".csv,text/csv" style="display:none;">
+        <div id="genDirMsg" class="small"></div>
+        <p class="small text-muted mb-0">El directorio también se guarda en tu archivo de base, así que en otra PC no hace falta volver a exportarlo. Actualízalo de vez en cuando para incluir al personal nuevo.</p>
+      </div>
+
       <div id="genBaseMsg" class="small mb-2"></div>
       <details class="gen-ajustes" open>
         <summary><i class="bi bi-clock-history"></i> Historial de bloques (para recuperar los speeches al cerrar)</summary>
@@ -986,6 +1038,7 @@
         <div id="genUsuariosTabla" class="gen-tabla-wrap"></div>
       </details>
     </section>
+    <div id="genSugerencias" class="gen-sugerencias" style="display:none;"></div>
   </div>
 
 </div>
@@ -2075,6 +2128,6 @@ window.addEventListener('scroll', () => mnHeader.classList.toggle('compacta', wi
 <!-- lógica del informe Word (TdR + OS + Word) -->
 <script src="informe.js"></script>
 <!-- generador de tickets Jason (pestaña 7) -->
-<script src="generador.js"></script>
+<script src="generador.js?v=5"></script>  <!-- al cambiar generador.js, sube este número (v=5, v=6…) para que el navegador no use la versión vieja -->
 </body>
 </html>

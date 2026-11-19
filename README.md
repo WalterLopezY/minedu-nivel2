@@ -120,24 +120,26 @@ proyecto.
 ## Generador de Tickets ("tickets Jason") — pestaña 7
 
 Se abre con el botón **Generador de Tickets** arriba de los pasos (o con la dirección terminada en `#generador`).
-No necesita el Excel. Su lógica está en `generador.js`.
+No necesita el Excel. Su lógica está en `generador.js` (al cambiarlo, subir el número de `generador.js?v=…` en `index.html`).
 
-1. **Datos**: N.º de ticket padre, motivo (caso encontrado) y datos del usuario. Si el usuario ya fue registrado,
-   al escribir su usuario (o nombre) los demás datos se completan solos; sede, piso y área también se sugieren.
-2. **Atenciones**: lista por grupos con "Seleccionar todo" y "Solo habituales" (⭐). *Agregar una atención* suma
-   atenciones propias (título + texto del speech) que quedan guardadas.
-3. **Envío** (después de GENERAR CORREOS Y SPEECHES):
-   - **ABRIR SIGUIENTE CORREO**: abre en Outlook web el siguiente correo ya lleno; solo se revisa y se da Enviar.
-     Funciona en cualquier PC con el navegador (sesión de Outlook web iniciada). Los abiertos quedan en verde.
-   - Botón *Escritorio* en cada correo: lo abre en Outlook de escritorio.
-   - *Enviar todos de golpe* (.cmd): solo en una PC con Outlook clásico; `S` envía, `B` deja borradores.
-4. **Speech de cierre**: una tarjeta por ticket. CASO ENCONTRADO = frase del motivo + "Al revisar, " + lo encontrado en
-   esa atención. Si se edita el caso o la acción, se guarda como speech propio para esa atención y ese motivo, y se
-   reutiliza la próxima vez (*Restaurar sugerido* vuelve al original). **Copiar speech** copia todo con formato:
-   en GLPI, Ctrl+A dentro del cuadro y Ctrl+V. Las atenciones nuevas sin texto reciben un speech básico editable.
-5. **Mi base de datos**: usuarios, atenciones propias, speeches propios e historial de bloques (con sus speeches, para cerrar los
-   tickets después). Se guarda en el navegador; **Exportar / Importar respaldo** (.json) para llevarla a otra PC
-   (al importar se combina, no se borra nada). Guardar el respaldo en el OneDrive institucional.
+1. **Datos**: N.º de ticket padre, motivo (caso encontrado) y datos del usuario. En *Nombres* o *Usuario* se escribe
+   cualquier parte del nombre o apellido y se elige a la persona (de tu base o del directorio MINEDU).
+   *Se escribe como* (Usuario/Usuaria) cambia el correo y el speech.
+2. **Tickets hijo**: plantillas según el ticket padre (Lentitud, Certificado digital, Impresora y escáner, y las tuyas con
+   *Guardar selección como plantilla*), lista por grupos y *Agregar un ticket hijo*: título, tipo (Solicitud/Incidente) y
+   nota con tus palabras; el speech formal se arma solo.
+3. **Envío**: **ABRIR SIGUIENTE CORREO** abre en Outlook web el siguiente correo listo (solo se da Enviar). También botón
+   *Escritorio* por correo y, en una PC con Outlook clásico, el envío de todos de golpe (.cmd).
+4. **Speech de cierre**: estructura técnica (caso: motivo + afectación + hallazgo; acción: acción técnica + beneficio +
+   resultado). Lo editado se guarda como speech propio para ese ticket hijo y ese motivo. **Copiar speech** copia todo con
+   formato (en GLPI: Ctrl+A y Ctrl+V). *Mejorar con Claude* copia una instrucción para pedir un speech más pulido.
+5. **Mi base de datos**:
+   - **Guardado automático en OneDrive** (Chrome/Edge): *Crear archivo de base* una vez dentro de OneDrive; en otra PC
+     *Abrir mi base existente*. Se combina sin perder datos y lo borrado no revive. Respaldo manual (.json) de reserva.
+   - **Directorio MINEDU**: *Descargar exportador (.cmd)* → doble clic en una PC con Outlook clásico → genera
+     `directorio_minedu.csv` → *Importar directorio*. Uso interno, solo para ubicar usuarios.
+   - **Exportar a Excel**: usuarios, historial (un renglón por ticket hijo), speeches propios y tickets hijo propios.
 
-Formato del asunto: `<Atención> - Ticket Padre: <N.º> - Sin Notificar - Por Regularizar`.
-Para cambiar textos: `CATALOGO`, `MOTIVOS`, `armarAsunto()` y `armarCuerpo()` al inicio de `generador.js`.
+Formato del asunto: `<Ticket hijo> - Ticket Padre: <N.º> - Sin Notificacion - Por Regularizar.` El cuerpo repite el asunto y
+luego `Usuario|Usuaria: Nombre (USUARIO)`, `Lugar: Sede - Área - Piso N`, `Anexo: …` y `Por Regularizar con <operador>`.
+Para cambiar textos: `CATALOGO`, `MOTIVOS`, `PLANTILLAS`, `armarAsunto()` y `armarCuerpo()` al inicio de `generador.js`.
