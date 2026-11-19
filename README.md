@@ -129,17 +129,23 @@ No necesita el Excel. Su lógica está en `generador.js` (al cambiarlo, subir el
    *Guardar selección como plantilla*), lista por grupos y *Agregar un ticket hijo*: título, tipo (Solicitud/Incidente) y
    nota con tus palabras; el speech formal se arma solo.
 3. **Envío**: **ABRIR SIGUIENTE CORREO** abre en Outlook web el siguiente correo listo (solo se da Enviar). También botón
-   *Escritorio* por correo y, en una PC con Outlook clásico, el envío de todos de golpe (.cmd).
+   *Escritorio* por correo y, en una PC con Outlook clásico, el envío de todos de golpe (.ps1: clic derecho → Ejecutar con PowerShell).
 4. **Speech de cierre**: estructura técnica (caso: motivo + afectación + hallazgo; acción: acción técnica + beneficio +
    resultado). Lo editado se guarda como speech propio para ese ticket hijo y ese motivo. **Copiar speech** copia todo con
    formato (en GLPI: Ctrl+A y Ctrl+V). *Mejorar con Claude* copia una instrucción para pedir un speech más pulido.
 5. **Mi base de datos**:
    - **Guardado automático en OneDrive** (Chrome/Edge): *Crear archivo de base* una vez dentro de OneDrive; en otra PC
      *Abrir mi base existente*. Se combina sin perder datos y lo borrado no revive. Respaldo manual (.json) de reserva.
-   - **Directorio MINEDU**: *Descargar exportador (.cmd)* → doble clic en una PC con Outlook clásico → genera
+   - **Directorio MINEDU**: *Descargar exportador (.ps1)* → clic derecho → Ejecutar con PowerShell, en una PC con Outlook clásico → genera
      `directorio_minedu.csv` → *Importar directorio*. Uso interno, solo para ubicar usuarios.
    - **Exportar a Excel**: usuarios, historial (un renglón por ticket hijo), speeches propios y tickets hijo propios.
 
 Formato del asunto: `<Ticket hijo> - Ticket Padre: <N.º> - Sin Notificacion - Por Regularizar.` El cuerpo repite el asunto y
 luego `Usuario|Usuaria: Nombre (USUARIO)`, `Lugar: Sede - Área - Piso N`, `Anexo: …` y `Por Regularizar con <operador>`.
 Para cambiar textos: `CATALOGO`, `MOTIVOS`, `PLANTILLAS`, `armarAsunto()` y `armarCuerpo()` al inicio de `generador.js`.
+
+**Scripts de Outlook (.ps1):** el envío de correos y el exportador de directorio se descargan como archivos `.ps1`
+legibles (sin `.cmd` autoejecutable, que el antivirus marca como `ScriptContainedMaliciousContent`). Se ejecutan con
+clic derecho → *Ejecutar con PowerShell*. Si Windows los bloquea por venir de descarga: clic derecho → Propiedades →
+*Desbloquear*. Si la entidad fuerza la directiva de ejecución por GPO (AllSigned), un script sin firmar no correrá; en
+ese caso quedan los botones *Outlook web* / *Escritorio* uno por uno. Generados por `armarScript()` y `scriptDirectorio()`.

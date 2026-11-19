@@ -524,15 +524,15 @@
       `  @{ Asunto = ${ps(c.asunto)}; Cuerpo = (@(${c.cuerpo.split('\n').map(ps).join(', ')}) -join "\`r\`n") }`
     ).join(",\r\n");
     return [
-      '<# : batch',
-      '@echo off',
-      'chcp 65001 >nul',
-      'powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=[IO.File]::ReadAllText(\'%~f0\',[Text.Encoding]::UTF8); iex $s"',
-      'echo.',
-      'pause',
-      'exit /b',
-      '#>',
-      '# ===== Envío de tickets a Mesa de Servicios (generado por el Validador de Tickets) =====',
+      '# ============================================================================',
+      '#  Envio de tickets a Mesa de Servicios - Generador de Tickets (MINEDU/OTIC)',
+      '# ----------------------------------------------------------------------------',
+      '#  Que hace: crea un correo por cada ticket y los ENVIA o los deja como',
+      '#  BORRADORES usando el Outlook de escritorio que ya tienes abierto con tu',
+      '#  sesion. NO pide ni guarda contrasenas y NO se conecta a ningun otro lugar.',
+      '#  Puedes abrir este archivo con el Bloc de notas para leerlo antes de usarlo.',
+      '#  Como ejecutarlo: clic derecho sobre el archivo > Ejecutar con PowerShell.',
+      '# ============================================================================',
       '[Console]::OutputEncoding = [Text.Encoding]::UTF8',
       `$cuenta = ${ps(ajustes.cuenta)}`,
       `$para   = ${ps(ajustes.destino)}`,
@@ -545,15 +545,15 @@
       '$i = 0; foreach ($c in $correos) { $i++; Write-Host "  $i. $($c.Asunto)" }',
       'Write-Host ""',
       '$op = Read-Host "Escribe S para ENVIAR, B para guardar como BORRADORES, o Enter para cancelar"',
-      'if ($op -notmatch "^[SsBb]$") { Write-Host "Cancelado. No se envio nada." -ForegroundColor Yellow; return }',
+      'if ($op -notmatch "^[SsBb]$") { Write-Host "Cancelado. No se envio nada." -ForegroundColor Yellow; Read-Host "Presiona Enter para cerrar"; return }',
       'try { $ol = [Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch { try { $ol = New-Object -ComObject Outlook.Application } catch { $ol = $null } }',
-      'if (-not $ol) { Write-Host "No se pudo abrir Outlook de escritorio (clasico). Abrelo e intenta de nuevo, o usa los botones de la pagina." -ForegroundColor Red; return }',
+      'if (-not $ol) { Write-Host "No se pudo abrir Outlook de escritorio (clasico). Abrelo e intenta de nuevo, o usa los botones de la pagina." -ForegroundColor Red; Read-Host "Presiona Enter para cerrar"; return }',
       '$acc = $null',
       'foreach ($a in $ol.Session.Accounts) { if ($a.SmtpAddress -ieq $cuenta) { $acc = $a } }',
       'if (-not $acc) {',
       '  Write-Host "No se encontro la cuenta $cuenta en Outlook. Se usara la cuenta predeterminada de Outlook." -ForegroundColor Yellow',
       '  $sigue = Read-Host "Continuar? (S/N)"',
-      '  if ($sigue -notmatch "^[Ss]$") { Write-Host "Cancelado." -ForegroundColor Yellow; return }',
+      '  if ($sigue -notmatch "^[Ss]$") { Write-Host "Cancelado." -ForegroundColor Yellow; Read-Host "Presiona Enter para cerrar"; return }',
       '}',
       '$i = 0; $ok = 0',
       'foreach ($c in $correos) {',
@@ -571,6 +571,8 @@
       '}',
       'Write-Host ""',
       'Write-Host "Listo: $ok de $n correos procesados." -ForegroundColor Cyan',
+      'Write-Host ""',
+      'Read-Host "Presiona Enter para cerrar"',
       ''
     ].join('\r\n');
   }
@@ -583,7 +585,7 @@
   }
   function descargarScript(){
     if(!bloque) return;
-    descargar(`enviar_tickets_${(bloque.padre || 'bloque').replace(/[^\w-]/g, '')}.cmd`, armarScript(), 'application/octet-stream');
+    descargar(`enviar_tickets_${(bloque.padre || 'bloque').replace(/[^\w-]/g, '')}.ps1`, armarScript(), 'text/plain');
   }
 
   // ---------------- atenciones propias ----------------
@@ -843,24 +845,22 @@
     else if(e.key === 'Escape') caja.style.display = 'none';
   }
 
-  // ---- exportador del directorio (.cmd para una PC con Outlook clásico) ----
+  // ---- exportador del directorio (.ps1 limpio, para una PC con Outlook clásico) ----
   function scriptDirectorio(){
     return [
-      '<# : batch',
-      '@echo off',
-      'chcp 65001 >nul',
-      'set "DESTINO=%~dp0"',
-      'powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=[IO.File]::ReadAllText(\'%~f0\',[Text.Encoding]::UTF8); iex $s"',
-      'echo.',
-      'pause',
-      'exit /b',
-      '#>',
-      '# ===== Exporta la libreta de direcciones global de Outlook a directorio_minedu.csv =====',
-      '# Solo lee: nombre, usuario, correo, area, oficina, telefono y cargo. No envia nada a ningun lado.',
+      '# ============================================================================',
+      '#  Exporta la libreta de direcciones de Outlook a directorio_minedu.csv',
+      '# ----------------------------------------------------------------------------',
+      '#  Solo LEE del Outlook de escritorio ya abierto: nombre, usuario, correo,',
+      '#  area, oficina, telefono y cargo. NO envia nada a ningun lado, NO borra nada',
+      '#  y NO pide contrasenas. Puedes abrirlo con el Bloc de notas para leerlo.',
+      '#  Como ejecutarlo: clic derecho sobre el archivo > Ejecutar con PowerShell.',
+      '# ============================================================================',
       '[Console]::OutputEncoding = [Text.Encoding]::UTF8',
+      '$DESTINO = if ($PSScriptRoot) { $PSScriptRoot } else { [Environment]::GetFolderPath("Desktop") }',
       'Write-Host "Leyendo la libreta de direcciones de Outlook. Puede tardar varios minutos..." -ForegroundColor Cyan',
       'try { $ol = [Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch { try { $ol = New-Object -ComObject Outlook.Application } catch { $ol = $null } }',
-      'if (-not $ol) { Write-Host "No se pudo abrir Outlook de escritorio (clasico). Abrelo e intenta de nuevo." -ForegroundColor Red; return }',
+      'if (-not $ol) { Write-Host "No se pudo abrir Outlook de escritorio (clasico). Abrelo e intenta de nuevo." -ForegroundColor Red; Read-Host "Presiona Enter para cerrar"; return }',
       '$entradas = $ol.Session.GetGlobalAddressList().AddressEntries',
       '$total = $entradas.Count',
       '$lista = New-Object System.Collections.Generic.List[object]',
@@ -876,13 +876,15 @@
       '  } catch { }',
       '}',
       'Write-Progress -Activity "Leyendo directorio" -Completed',
-      '$dest = Join-Path $env:DESTINO "directorio_minedu.csv"',
+      '$dest = Join-Path $DESTINO "directorio_minedu.csv"',
       '$lista | Export-Csv -Path $dest -NoTypeInformation -Encoding UTF8',
       'Write-Host ""',
       'Write-Host "Listo: $($lista.Count) personas exportadas en:" -ForegroundColor Green',
       'Write-Host "  $dest"',
       'Write-Host "Ahora, en el Generador de Tickets usa Importar directorio y elige ese archivo." -ForegroundColor Cyan',
-      'Start-Process explorer.exe "/select,`"$dest`""',
+      'try { Start-Process explorer.exe "/select,`"$dest`"" } catch { }',
+      'Write-Host ""',
+      'Read-Host "Presiona Enter para cerrar"',
       ''
     ].join('\r\n');
   }
@@ -1241,7 +1243,7 @@
     });
 
     // directorio
-    $('genDirScript').addEventListener('click', () => descargar('exportar_directorio_outlook.cmd', scriptDirectorio(), 'application/octet-stream'));
+    $('genDirScript').addEventListener('click', () => descargar('exportar_directorio_outlook.ps1', scriptDirectorio(), 'text/plain'));
     $('genDirImportar').addEventListener('click', () => $('genDirInput').click());
     $('genDirInput').addEventListener('change', e => { if(e.target.files[0]) importarDirectorio(e.target.files[0]); e.target.value = ''; });
 
