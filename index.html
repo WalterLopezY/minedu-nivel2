@@ -970,7 +970,13 @@
         <div id="genCorreos" class="mt-3"></div>
         <details class="gen-ajustes">
           <summary><i class="bi bi-rocket-takeoff"></i> Enviar todos de golpe (solo en una PC con Outlook clásico)</summary>
-          <p class="small text-muted mt-2 mb-2">Descarga el archivo y dale <strong>clic derecho → Ejecutar con PowerShell</strong>. Elige <strong>S</strong> para enviar o <strong>B</strong> para dejarlos como borradores. Usa la sesión de Outlook abierta: no pide contraseña. Si Windows no deja ejecutarlo, clic derecho en el archivo → Propiedades → marca <strong>Desbloquear</strong>.</p>
+          <p class="small text-muted mt-2 mb-1">Descarga el archivo. Si al hacer «Ejecutar con PowerShell» la ventana se abre y se cierra sola, hazlo así (la ventana queda abierta y muestra cualquier error):</p>
+          <ol class="small text-muted mb-2 ps-3">
+            <li>Menú Inicio → escribe <strong>PowerShell</strong> → abre <strong>Windows PowerShell</strong>.</li>
+            <li>En la ventana azul escribe <code>Set-ExecutionPolicy -Scope Process Bypass -Force</code> y Enter.</li>
+            <li>Escribe <code>&amp;</code> y un espacio, <strong>arrastra el archivo .ps1</strong> a la ventana y Enter.</li>
+            <li>Elige <strong>S</strong> (enviar) o <strong>B</strong> (borradores). Usa tu sesión de Outlook: no pide contraseña.</li>
+          </ol>
           <button id="genBtnScript" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Descargar envío automático (.ps1)</button>
         </details>
       </section>
@@ -1013,7 +1019,7 @@
         <p class="mb-1 fw-semibold"><i class="bi bi-journal-bookmark"></i> Directorio MINEDU (libreta de direcciones de Outlook)</p>
         <div id="genDirEstado" class="mb-2"></div>
         <ol class="small text-muted mb-2 ps-3">
-          <li>En una PC con <strong>Outlook clásico</strong> abierto: <button id="genDirScript" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Descargar exportador (.ps1)</button>, luego <strong>clic derecho → Ejecutar con PowerShell</strong>. Al terminar abre la carpeta con <code>directorio_minedu.csv</code>. Si Windows no lo deja ejecutar: clic derecho → Propiedades → <strong>Desbloquear</strong>.</li>
+          <li>En una PC con <strong>Outlook clásico</strong> abierto: <button id="genDirScript" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Descargar exportador (.ps1)</button>. Para ejecutarlo: menú Inicio → <strong>PowerShell</strong>; en la ventana escribe <code>Set-ExecutionPolicy -Scope Process Bypass -Force</code> (Enter), luego <code>&amp;</code> espacio, arrastra el archivo y Enter. Al terminar abre la carpeta con <code>directorio_minedu.csv</code>.</li>
           <li><button id="genDirImportar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-upload"></i> Importar directorio (.csv)</button> y elige ese archivo.</li>
           <li>Listo: en <strong>Nombres</strong> o <strong>Usuario</strong> escribe cualquier parte del nombre o apellido y elige a la persona.</li>
         </ol>
@@ -2128,6 +2134,6 @@ window.addEventListener('scroll', () => mnHeader.classList.toggle('compacta', wi
 <!-- lógica del informe Word (TdR + OS + Word) -->
 <script src="informe.js"></script>
 <!-- generador de tickets Jason (pestaña 7) -->
-<script src="generador.js?v=6"></script>  <!-- al cambiar generador.js, sube este número (v=5, v=6…) para que el navegador no use la versión vieja -->
+<script src="generador.js?v=7"></script>  <!-- al cambiar generador.js, sube este número (v=5, v=6…) para que el navegador no use la versión vieja -->
 </body>
 </html>
