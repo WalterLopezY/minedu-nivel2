@@ -781,22 +781,32 @@
       msg.innerHTML = '<span style="color:var(--mn-red)">El archivo no tiene el formato del exportador (faltan las columnas Nombre y Usuario).</span>'; return;
     }
     const v = (f, n) => (col(n) >= 0 ? limpio(f[col(n)]) : '');
-    const vistos = new Set(), lista = [];
+    // se descartan registros de sistema: nombre que es un código (GUID) o un correo, o sin usuario
+    const esGuid = s => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+    const pareceCorreo = s => /@/.test(s) || /\.(gob|pe|com|edu|net|org)\b/i.test(s);
+    const telOk = s => (/\d{3,}/.test(s) ? s : '');   // "0" o vacío quedan en blanco
+    const vistos = new Set(); let lista = [], descartados = 0;
     filas.forEach(f => {
-      const correo = v(f, 'correo');
-      const usuario = (v(f, 'usuario') || correo.split('@')[0] || '').toUpperCase();
-      const nombres = v(f, 'nombres'), apellidos = v(f, 'apellidos');
-      const nombre = tituloNombre(nombres && apellidos ? `${nombres} ${apellidos}` : v(f, 'nombre'));
-      if(!nombre || !usuario || vistos.has(usuario)) return;
+      const correo = v(f, 'correo'), nombres = v(f, 'nombres'), apellidos = v(f, 'apellidos');
+      // El usuario de red (el que se usa en GLPI) suele ser la parte del correo antes de @.
+      // El "alias" de Exchange a veces difiere (p. ej. LEOALVAREZ vs lalvarezp), por eso se prefiere el correo.
+      let base = correo.split('@')[0] || v(f, 'usuario');
+      if(pareceCorreo(base)) base = (correo.split('@')[0] || '');
+      const usuario = base.toUpperCase();
+      let nombre = tituloNombre((nombres || apellidos) ? `${nombres} ${apellidos}`.trim() : v(f, 'nombre'));
+      if(!nombre || esGuid(nombre) || pareceCorreo(nombre)) nombre = tituloNombre(`${nombres} ${apellidos}`.trim());
+      if(!usuario || !nombre || esGuid(nombre) || pareceCorreo(nombre)){ descartados++; return; }
+      if(vistos.has(usuario)) return;
       vistos.add(usuario);
-      lista.push({ n: nombre, u: usuario, a: v(f, 'area'), o: v(f, 'oficina'), t: v(f, 'telefono') || v(f, 'celular'), m: correo });
+      lista.push({ n: nombre, u: usuario, a: v(f, 'area'), o: v(f, 'oficina'), t: telOk(v(f, 'telefono')) || telOk(v(f, 'celular')), m: correo });
     });
-    if(!lista.length){ msg.innerHTML = '<span style="color:var(--mn-red)">No se encontraron personas en el archivo.</span>'; return; }
+    if(!lista.length){ msg.innerHTML = '<span style="color:var(--mn-red)">No se encontraron personas válidas en el archivo.</span>'; return; }
     lista.sort((a, b) => a.n.localeCompare(b.n, 'es'));
     directorio = { fecha: new Date().toISOString(), lista };
     await idb.set('directorio', directorio);
     indexarDirectorio(); pintarBase(); programarGuardadoArchivo();
-    msg.innerHTML = `<span class="gen-ok"><i class="bi bi-check-circle-fill"></i> Directorio importado: ${lista.length.toLocaleString('es-PE')} personas.</span>`;
+    msg.innerHTML = `<span class="gen-ok"><i class="bi bi-check-circle-fill"></i> Directorio importado: ${lista.length.toLocaleString('es-PE')} personas.</span>` +
+      (descartados ? ` <span class="small text-muted">(${descartados.toLocaleString('es-PE')} registros de sistema o sin nombre se omitieron)</span>` : '');
   }
 
   // ---- buscador de personas (directorio + tus usuarios registrados) ----
