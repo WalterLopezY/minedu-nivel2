@@ -590,6 +590,13 @@
   .gen-plantillas{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .gen-plant{ display:inline-flex; align-items:center; gap:2px; }
   #genTickets{ position:relative; }
+  .gen-tabs{ display:flex; gap:6px; flex-wrap:wrap; margin:4px 0 2px; }
+  .gen-tab{ border:1px solid var(--mn-line); background:var(--glass-fuerte); color:var(--mn-muted); border-radius:999px; padding:5px 14px; font-size:13.5px; font-weight:600; }
+  .gen-tab:hover{ color:var(--mn-ink); }
+  .gen-tab.activo{ background:var(--mn-blue); color:#fff; border-color:var(--mn-blue); }
+  .gen-tab i{ font-size:12px; }
+  .campo-falta, .campo-falta:focus{ border-color:var(--mn-red) !important; box-shadow:0 0 0 .18rem rgba(200,16,46,.18) !important; }
+  #genLista.campo-falta{ outline:2px dashed var(--mn-red); outline-offset:6px; border-radius:16px; }
   .gen-sugerencias{ position:absolute; z-index:50; max-height:360px; overflow:auto; padding:6px; border-radius:14px; background:var(--mn-card, #fff); border:1px solid var(--mn-line); box-shadow:0 14px 34px rgba(15,23,42,.18); }
   :root[data-theme="dark"] .gen-sugerencias{ background:#1b2433; }
   .gen-sug{ display:flex; flex-direction:column; align-items:flex-start; width:100%; text-align:left; border:none; background:transparent; padding:7px 10px; border-radius:10px; color:var(--mn-ink); }
@@ -887,6 +894,11 @@
           <label class="form-label small text-muted mb-1" for="genContacto">Anexo <span class="text-muted">(opcional)</span></label>
           <input id="genContacto" class="form-control mn-input" placeholder="21222" autocomplete="off">
         </div>
+        <div class="gen-f-ancho">
+          <label class="form-label small text-muted mb-1" for="genIdent">Identificador de equipo / usuario <span class="text-muted">(opcional · solo si un mismo ticket padre atiende varios equipos o personas)</span></label>
+          <input id="genIdent" class="form-control mn-input" placeholder="Ej.: Equipo 01  ·  Usuario WLOPEZ" autocomplete="off">
+          <p class="small text-muted mt-1 mb-0"><i class="bi bi-info-circle"></i> Si lo llenas, el asunto queda “Actualizacion de Windows Update <strong>en Equipo 01</strong> - Ticket Padre: …”, y cada equipo/usuario queda en su propia pestaña.</p>
+        </div>
       </div>
       <div id="genUsuarioAviso" class="gen-aviso-usu" style="display:none;"></div>
       <!-- listas de autocompletado: se llenan con tu base de usuarios -->
@@ -950,15 +962,20 @@
 
       <div class="mn-generar mt-3">
         <button id="genBtnGenerar" type="button" class="btn btn-mn px-5 py-2"><i class="bi bi-lightning-charge-fill"></i> PREPARAR CORREOS Y SPEECHES</button>
-        <button id="genBtnLimpiar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Nuevo bloque</button>
+        <button id="genBtnSiguiente2" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person-plus"></i> Siguiente usuario</button>
+        <button id="genBtnLimpiar" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Limpiar todo</button>
       </div>
       <div id="genMsg"></div>
     </section>
 
     <div id="genResultados" style="display:none;">
       <section class="mn-card">
-        <p class="mn-table-title" style="margin-top:0;"><span class="mn-tt-num">3</span> ENVIAR CORREOS A MESA DE SERVICIOS</p>
-        <p class="small text-muted mb-2" id="genBloqueInfo"></p>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+          <p class="mn-table-title" style="margin:0;"><span class="mn-tt-num">3</span> ENVIAR CORREOS A MESA DE SERVICIOS</p>
+          <button id="genBtnLimpiarResultados" type="button" class="btn btn-outline-secondary btn-sm ms-auto"><i class="bi bi-eraser"></i> Limpiar correos y speeches</button>
+        </div>
+        <div id="genTabs" class="gen-tabs" style="display:none;"></div>
+        <p class="small text-muted mb-2 mt-2" id="genBloqueInfo"></p>
         <div id="genModoPrueba" class="gen-prueba" style="display:none;"></div>
         <div class="gen-envio">
           <div>
@@ -2134,6 +2151,6 @@ window.addEventListener('scroll', () => mnHeader.classList.toggle('compacta', wi
 <!-- lógica del informe Word (TdR + OS + Word) -->
 <script src="informe.js"></script>
 <!-- generador de tickets Jason (pestaña 7) -->
-<script src="generador.js?v=9"></script>  <!-- al cambiar generador.js, sube este número (v=5, v=6…) para que el navegador no use la versión vieja -->
+<script src="generador.js?v=13"></script>  <!-- al cambiar generador.js, sube este número (v=5, v=6…) para que el navegador no use la versión vieja -->
 </body>
 </html>

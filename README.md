@@ -125,11 +125,21 @@ No necesita el Excel. Su lógica está en `generador.js` (al cambiarlo, subir el
 1. **Datos**: N.º de ticket padre, motivo (caso encontrado) y datos del usuario. En *Nombres* o *Usuario* se escribe
    cualquier parte del nombre o apellido y se elige a la persona (de tu base o del directorio MINEDU).
    *Se escribe como* (Usuario/Usuaria) cambia el correo y el speech.
-2. **Tickets hijo**: plantillas según el ticket padre (Lentitud, Certificado digital, Impresora y escáner, y las tuyas con
-   *Guardar selección como plantilla*), lista por grupos y *Agregar un ticket hijo*: título, tipo (Solicitud/Incidente) y
-   nota con tus palabras; el speech formal se arma solo.
+2. **Tickets hijo**: catálogo por grupos (Actualizaciones, Limpieza, Sistema operativo, Seguridad, Office y Outlook,
+   Firma digital, Impresión y escaneo, Instalación de software, Red y conectividad). Los grupos y sus tickets están en
+   `CATALOGO` (generador.js); aparecen al cargar el archivo, no hay botón. *Agregar un ticket hijo*: título, tipo
+   (Solicitud/Incidente) y nota; el speech formal se arma solo. Si reescribes un título tuyo, el botón pasa a *Actualizar*.
+   Los "Agregados por mí" cuyo título ya existe en el catálogo se ocultan solos (dedupe por `normTit`). Plantillas por
+   ticket padre (fijas en `PLANTILLAS` y las tuyas con *Guardar selección como plantilla*).
+   Identificador opcional de equipo/usuario: si se llena, el asunto queda "… en Equipo 01" y cada equipo/usuario va en su
+   pestaña.
 3. **Envío**: **ABRIR SIGUIENTE CORREO** abre en Outlook web el siguiente correo listo (solo se da Enviar). También botón
    *Escritorio* por correo y, en una PC con Outlook clásico, el envío de todos de golpe (.ps1: clic derecho → Ejecutar con PowerShell).
+Pestañas (lotes): bajo un mismo ticket padre, cada PREPARAR crea una pestaña por equipo/usuario (etiqueta = identificador
+o usuario). Se cambia de pestaña sin perder las demás; cada una guarda sus correos y su speech. *Siguiente usuario* limpia
+los datos de la persona pero conserva padre, tickets marcados y pestañas. *Limpiar correos y speeches* vacía las pestañas.
+*Limpiar todo* deja el formulario en blanco.
+
 4. **Speech de cierre**: estructura técnica (caso: motivo + afectación + hallazgo; acción: acción técnica + beneficio +
    resultado). Lo editado se guarda como speech propio para ese ticket hijo y ese motivo. **Copiar speech** copia todo con
    formato (en GLPI: Ctrl+A y Ctrl+V). *Mejorar con Claude* copia una instrucción para pedir un speech más pulido.

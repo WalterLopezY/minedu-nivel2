@@ -98,9 +98,18 @@
         a: 'Se actualizaron las firmas y el motor del antivirus institucional. Esto asegura la protección del equipo frente a las amenazas más recientes. El antivirus quedó actualizado y activo, garantizando la continuidad de las labores de forma segura.' },
       { t: 'Escaneo completo de antivirus',
         c: 'se requería descartar la presencia de software malicioso',
-        a: 'Se ejecutó un análisis completo con el antivirus institucional. Esto permite verificar que el equipo se encuentre libre de software malicioso que afecte su rendimiento o la seguridad de la información. El análisis concluyó sin amenazas activas y el equipo quedó operativo, garantizando la continuidad de las labores.' }
+        a: 'Se ejecutó un análisis completo con el antivirus institucional. Esto permite verificar que el equipo se encuentre libre de software malicioso que afecte su rendimiento o la seguridad de la información. El análisis concluyó sin amenazas activas y el equipo quedó operativo, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de agente antivirus',
+        c: 'el equipo no contaba con el agente de antivirus institucional instalado',
+        a: 'Se instaló y activó el agente de antivirus institucional, verificando su conexión con la consola de administración y la descarga de las firmas vigentes. Esto protege el equipo frente a software malicioso y lo integra al monitoreo de seguridad de la entidad. El antivirus quedó instalado y operativo, garantizando la continuidad de las labores de forma segura.' }
     ]},
     { grupo: 'Office y Outlook', icono: 'bi-envelope-paper', items: [
+      { t: 'Instalación de Microsoft Office',
+        c: 'el equipo no contaba con el paquete Microsoft Office instalado',
+        a: 'Se instaló el paquete Microsoft Office y se configuró el perfil de correo institucional en Outlook. Esto habilita las herramientas de ofimática y el correo necesarios para las labores. Las aplicaciones quedaron instaladas y operativas, garantizando la continuidad de las labores.' },
+      { t: 'Licenciamiento de Microsoft Office',
+        c: 'el paquete Microsoft Office figuraba sin activar o con la licencia vencida',
+        a: 'Se activó la licencia de Microsoft Office con la cuenta institucional correspondiente. Esto habilita el uso completo de las aplicaciones sin restricciones ni avisos de producto no activado. Office quedó correctamente licenciado y operativo, garantizando la continuidad de las labores.' },
       { t: 'Optimización de Outlook',
         c: 'Microsoft Outlook presentaba lentitud al abrir y buscar correos',
         a: 'Se optimizó Microsoft Outlook mediante la reparación y compactación de su archivo de datos. Esto mejora la velocidad de apertura, búsqueda y sincronización del correo institucional. Outlook quedó funcionando con normalidad, garantizando la continuidad de las labores.' },
@@ -126,6 +135,34 @@
       { t: 'Configuración de escáner',
         c: 'el equipo no tenía configurada la función de escaneo',
         a: 'Se configuró la función de escaneo del equipo multifuncional, incluyendo la carpeta o el destino de digitalización, y se realizó un escaneo de prueba. Esto permite digitalizar documentos desde el puesto de trabajo. El escáner quedó operativo, garantizando la continuidad de las labores.' }
+    ]},
+    { grupo: 'Instalación de software', icono: 'bi-box-seam', items: [
+      { t: 'Instalación de software base',
+        c: 'el equipo no contaba con el software base institucional',
+        a: 'Se instaló el paquete de software base institucional (ofimática, navegador, lector de PDF, antivirus y utilitarios), verificando su correcto funcionamiento. Esto deja el equipo con las herramientas estándar necesarias para las labores. El equipo quedó operativo con el software base, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de Google Chrome',
+        c: 'el equipo no contaba con el navegador Google Chrome',
+        a: 'Se instaló el navegador Google Chrome en su versión vigente y se verificó el acceso a los sistemas web institucionales. Esto facilita la navegación y el uso de los aplicativos que lo requieren. El navegador quedó instalado y operativo, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de Mozilla Firefox',
+        c: 'el equipo no contaba con el navegador Mozilla Firefox',
+        a: 'Se instaló el navegador Mozilla Firefox en su versión vigente y se verificó el acceso a los sistemas web institucionales. Esto facilita la navegación y el uso de los aplicativos que lo requieren. El navegador quedó instalado y operativo, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de Adobe Acrobat Reader',
+        c: 'el equipo no contaba con un lector de documentos PDF',
+        a: 'Se instaló Adobe Acrobat Reader en su versión vigente y se estableció como lector de PDF predeterminado. Esto permite la apertura, lectura y firma de documentos PDF. La aplicación quedó instalada y operativa, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de PdfGear',
+        c: 'se requería una herramienta para editar y gestionar documentos PDF',
+        a: 'Se instaló la aplicación PdfGear y se verificó su funcionamiento. Esto permite editar, combinar y convertir documentos PDF desde el puesto de trabajo. La aplicación quedó instalada y operativa, garantizando la continuidad de las labores.' },
+      { t: 'Instalación de plugin para Declaración Jurada de Intereses (DJI)',
+        c: 'el equipo no contaba con el complemento necesario para la Declaración Jurada de Intereses (DJI)',
+        a: 'Se instaló y configuró el complemento requerido por la plataforma de Declaración Jurada de Intereses (DJI), verificando su integración con el navegador y el certificado digital. Esto permite al usuario presentar su declaración en el sistema del Estado. El complemento quedó operativo, garantizando la continuidad de las labores.' }
+    ]},
+    { grupo: 'Red y conectividad', icono: 'bi-wifi', items: [
+      { t: 'Configuración de red WLAN_CORP',
+        c: 'el equipo no se encontraba conectado a la red inalámbrica institucional WLAN_CORP',
+        a: 'Se configuró la conexión a la red inalámbrica institucional WLAN_CORP con las credenciales y el perfil de seguridad correspondientes, verificando el acceso a los servicios de red. Esto brinda al equipo conectividad institucional de forma segura. La conexión quedó operativa, garantizando la continuidad de las labores.' },
+      { t: 'Configuración de red cableada',
+        c: 'el equipo no contaba con conexión a la red cableada institucional',
+        a: 'Se configuró la conexión a la red cableada institucional, verificando la asignación de direccionamiento y el acceso a los servicios de red. Esto brinda al equipo conectividad estable para sus labores. La conexión quedó operativa, garantizando la continuidad de las labores.' }
     ]}
   ];
   const GRUPO_PERSONAL = 'Agregados por mí';
@@ -184,10 +221,13 @@
   const aliasCuenta = () => (ajustes.cuenta.split('@')[0] || '').trim();
   const fechaCorta = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); };
 
+  const normTit = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
   function todasLasAtenciones(){
     const lista = [];
-    CATALOGO.forEach(g => g.items.forEach(it => lista.push({ ...it, grupo: g.grupo, personal: false })));
-    personales.forEach((it, i) => lista.push({ ...it, grupo: GRUPO_PERSONAL, personal: true, idx: i }));
+    const enCatalogo = new Set();
+    CATALOGO.forEach(g => g.items.forEach(it => { lista.push({ ...it, grupo: g.grupo, personal: false }); enCatalogo.add(normTit(it.t)); }));
+    // Los "agregados por mí" que ya existen en el catálogo oficial no se muestran aparte (se evita el duplicado)
+    personales.forEach((it, i) => { if(!enCatalogo.has(normTit(it.t))) lista.push({ ...it, grupo: GRUPO_PERSONAL, personal: true, idx: i }); });
     return lista.map((it, n) => ({ ...it, id: 'at' + n }));
   }
 
@@ -224,15 +264,21 @@
       piso: limpio($('genPiso').value).replace(/^piso\s*/i, ''),
       area: limpio($('genArea').value),
       contacto: limpio($('genContacto').value),
+      ident: limpio($('genIdent').value),
       caso
     };
   }
 
   // ---------------- formato del correo ----------------
+  // Quita tildes y diacríticos (á→a, ñ→n). Se usa SOLO en el asunto y el cuerpo del correo,
+  // porque al pasar por el correo/GLPI los acentos salen mal ("InstalaciÃ³n"). El speech que se
+  // pega directo en GLPI SÍ conserva los acentos.
+  const sinAcentos = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '');
+
   function armarAsunto(titulo, d){
-    return `${titulo} - Ticket Padre: ${d.padre} - Sin Notificacion - Por Regularizar.`;
+    return sinAcentos(`${titulo}${d.ident ? ' en ' + d.ident : ''} - Ticket Padre: ${d.padre} - Sin Notificacion - Por Regularizar.`);
   }
-  // El cuerpo empieza repitiendo el asunto; luego usuario, lugar (sede - área - piso) y anexo.
+  // El cuerpo empieza repitiendo el asunto; luego usuario, lugar (sede - area - piso) y anexo.
   function armarCuerpo(d, asunto){
     const lineas = [
       asunto,
@@ -242,7 +288,7 @@
     ];
     if(d.contacto) lineas.push(`Anexo: ${d.contacto}`);
     lineas.push('', `Por Regularizar con ${aliasCuenta()}`);
-    return lineas.join('\n');
+    return sinAcentos(lineas.join('\n'));
   }
 
   // ---------------- speech por atención ----------------
@@ -347,32 +393,44 @@
   }
 
   // ---------------- generar correos y speeches ----------------
-  let bloque = null;   // bloque mostrado: {id, fecha, padre, usuario, nombre, items:[{titulo, asunto, cuerpo, caso, accion, sino, evid, enviado}]}
+  // Un "lote" = los tickets de un equipo/usuario. Bajo un mismo ticket padre puede haber varios
+  // (equipo 1, 2, 3…), y cada uno es una pestaña con sus correos y su speech. 'bloque' es el lote activo.
+  let lotes = [], loteActivo = -1, bloque = null;
 
   function validar(d, sel){
-    const faltan = [];
-    if(!d.padre) faltan.push('N.º de ticket padre');
-    if(!d.nombre) faltan.push('nombres completos');
-    if(!d.usuario) faltan.push('usuario');
-    if(!d.sede) faltan.push('sede');
-    if(!d.piso) faltan.push('piso');
-    if(!d.area) faltan.push('área');
-    if($('genMotivo').value === 'otro' && !d.caso) faltan.push('caso encontrado');
-    if(!sel.length) faltan.push('al menos una atención de la lista');
-    return faltan;
+    const faltan = [], campos = [];
+    const pedir = (cond, etiqueta, id) => { if(cond){ faltan.push(etiqueta); if(id) campos.push(id); } };
+    pedir(!d.padre, 'N.º de ticket padre', 'genPadre');
+    pedir(!d.nombre, 'nombres completos', 'genNombre');
+    pedir(!d.usuario, 'usuario', 'genUsuario');
+    pedir(!d.sede, 'sede', 'genSede');
+    pedir(!d.piso, 'piso', 'genPiso');
+    pedir(!d.area, 'área', 'genArea');
+    pedir($('genMotivo').value === 'otro' && !d.caso, 'caso encontrado', 'genMotivoOtro');
+    pedir(!sel.length, 'al menos un ticket hijo de la lista', null);
+    return { faltan, campos };
   }
 
   function generar(){
     const d = datos(), sel = seleccionadas();
-    const faltan = validar(d, sel);
+    document.querySelectorAll('#genTickets .campo-falta').forEach(el => el.classList.remove('campo-falta'));
+    const { faltan, campos } = validar(d, sel);
     if(faltan.length){
       $('genMsg').innerHTML = `<div class="mn-validation err"><i class="bi bi-exclamation-circle-fill"></i> Falta completar: ${esc(faltan.join(', '))}.</div>`;
+      campos.forEach(id => { const el = $(id); if(el) el.classList.add('campo-falta'); });
+      if(!sel.length) $('genLista').classList.add('campo-falta');
+      // llevar al primer campo que falta, o al aviso
+      const primero = campos.length ? $(campos[0]) : $('genMsg');
+      primero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if(campos.length) setTimeout(() => $(campos[0]).focus(), 300);
       return;
     }
-    $('genMsg').innerHTML = `<div class="gen-listo"><i class="bi bi-check-circle-fill"></i> ${sel.length} correos preparados. Todavía NO se envió nada: envíalos en el paso 3 con <strong>ABRIR SIGUIENTE CORREO</strong>.</div>`;
-    bloque = {
+    $('genLista').classList.remove('campo-falta');
+    $('genMsg').innerHTML = `<div class="gen-listo"><i class="bi bi-check-circle-fill"></i> ${sel.length} correos preparados en la pestaña «${esc(d.ident || d.usuario)}». Todavía NO se envió nada: envíalos en el paso 3 con <strong>ABRIR SIGUIENTE CORREO</strong>.</div>`;
+    const nuevo = {
       id: Date.now().toString(36), fecha: new Date().toISOString(),
-      padre: d.padre, usuario: d.usuario, nombre: d.nombre, trato: d.trato, motivo: d.motivo, motivoTxt: d.motivoTxt,
+      padre: d.padre, usuario: d.usuario, nombre: d.nombre, trato: d.trato, ident: d.ident,
+      etiqueta: d.ident || d.usuario || ('Lote ' + (lotes.length + 1)), motivo: d.motivo, motivoTxt: d.motivoTxt,
       items: sel.map(it => {
         const sp = speechPara(it, d), asunto = armarAsunto(it.t, d);
         return { titulo: it.t, asunto, cuerpo: armarCuerpo(d, asunto), caso: sp.caso, accion: sp.accion, sino: 'SI', evid: sp.accion,
@@ -380,9 +438,14 @@
       })
     };
     guardarUsuario(d);
-    historial.unshift(bloque);
+    historial.unshift(nuevo);
     historial = historial.slice(0, MAX_HISTORIAL);
     guardarHistorial();
+    // si ya hay una pestaña del mismo usuario/ident, se reemplaza; si no, se agrega
+    const mismo = lotes.findIndex(l => l.padre === nuevo.padre && (l.ident || l.usuario) === (nuevo.ident || nuevo.usuario));
+    if(mismo >= 0) lotes[mismo] = nuevo; else lotes.push(nuevo);
+    loteActivo = mismo >= 0 ? mismo : lotes.length - 1;
+    bloque = lotes[loteActivo];
     mostrarBloque();
   }
 
@@ -395,15 +458,32 @@
     pintarBase();
   }
 
+  function pintarTabs(){
+    const cont = $('genTabs');
+    if(lotes.length <= 1){ cont.innerHTML = ''; cont.style.display = 'none'; return; }
+    cont.style.display = '';
+    cont.innerHTML = lotes.map((l, i) => {
+      const pend = l.items.filter(x => !x.enviado).length;
+      return `<button type="button" class="gen-tab ${i === loteActivo ? 'activo' : ''}" data-lote="${i}">
+        <i class="bi ${pend ? 'bi-circle' : 'bi-check-circle-fill'}"></i> ${esc(l.etiqueta)}</button>`;
+    }).join('');
+  }
+
   function mostrarBloque(){
     const prueba = ajustes.destino.toLowerCase() !== AJUSTES_BASE.destino;
     $('genModoPrueba').style.display = prueba ? '' : 'none';
     $('genModoPrueba').innerHTML = `<i class="bi bi-cone-striped"></i> MODO PRUEBA: los correos irán a ${esc(ajustes.destino)} y no a Mesa de Servicios. Para el uso real, vuelve a poner ${esc(AJUSTES_BASE.destino)} en "Cuenta de operador y destino".`;
-    $('genBloqueInfo').innerHTML = `Ticket padre <strong>${esc(bloque.padre)}</strong> · ${esc(bloque.nombre)} (${esc(bloque.usuario)}) · ${esc(fechaCorta(bloque.fecha))}`;
+    pintarTabs();
+    $('genBloqueInfo').innerHTML = `Ticket padre <strong>${esc(bloque.padre)}</strong> · ${esc(bloque.nombre)} (${esc(bloque.usuario)})${bloque.ident ? ' · <strong>' + esc(bloque.ident) + '</strong>' : ''} · ${esc(fechaCorta(bloque.fecha))}`;
     pintarCorreos();
     pintarSpeeches();
     $('genResultados').style.display = '';
     $('genResultados').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function limpiarResultados(){   // vacía secciones 3 y 4 (todas las pestañas)
+    lotes = []; loteActivo = -1; bloque = null;
+    $('genResultados').style.display = 'none'; $('genMsg').innerHTML = '';
   }
 
   // enlaces para abrir el correo listo
@@ -586,7 +666,7 @@
   }
   function descargarScript(){
     if(!bloque) return;
-    descargar(`enviar_tickets_${(bloque.padre || 'bloque').replace(/[^\w-]/g, '')}.ps1`, armarScript(), 'text/plain');
+    descargar(`enviar_tickets_${(bloque.padre || 'bloque').replace(/[^\w-]/g, '')}.ps1`, '\uFEFF' + armarScript(), 'text/plain');
   }
 
   // ---------------- atenciones propias ----------------
@@ -608,17 +688,39 @@
     return { c, a: `${accion} ${beneficio} La atención quedó completada y verificada, garantizando la continuidad de las labores.` };
   }
 
+  // ¿el título escrito ya existe? devuelve dónde (catálogo / personal) para decidir agregar o actualizar
+  function dondeExiste(t){
+    const n = normTit(t);
+    if(CATALOGO.some(g => g.items.some(it => normTit(it.t) === n))) return 'catalogo';
+    const i = personales.findIndex(p => normTit(p.t) === n);
+    return i >= 0 ? i : null;
+  }
+  function etiquetaBotonAgregar(){
+    const d = dondeExiste(limpio($('genNuevoTitulo').value));
+    const b = $('genAgregar');
+    if(d === 'catalogo') b.innerHTML = '<i class="bi bi-check2-circle"></i> Ya está en el catálogo';
+    else if(typeof d === 'number') b.innerHTML = '<i class="bi bi-arrow-repeat"></i> Actualizar este ticket';
+    else b.innerHTML = '<i class="bi bi-plus-lg"></i> Agregar a la lista';
+  }
   function agregarPersonal(){
     const t = limpio($('genNuevoTitulo').value), tipo = $('genNuevoTipo').value, nota = limpio($('genNuevaNota').value);
     const aviso = $('genNuevoMsg');
     if(!t){ aviso.innerHTML = '<span style="color:var(--mn-red)">Escribe el título del ticket hijo.</span>'; return; }
-    if(todasLasAtenciones().some(x => x.t.toLowerCase() === t.toLowerCase())){ aviso.innerHTML = '<span style="color:var(--mn-red)">Ya existe un ticket hijo con ese título.</span>'; return; }
+    const donde = dondeExiste(t);
+    if(donde === 'catalogo'){ aviso.innerHTML = '<span class="gen-ok"><i class="bi bi-info-circle"></i> Ese ticket ya está en el catálogo oficial; márcalo en la lista de arriba.</span>'; return; }
     const sp = speechAutomatico(t, tipo, nota);
     quitarBorrado('p', t.toLowerCase());
-    personales.push({ t, tipo, nota, c: sp.c, a: sp.a, auto: true, fecha: new Date().toISOString() });
+    let accion;
+    if(typeof donde === 'number'){            // ya existe uno tuyo con ese título: se actualiza
+      personales[donde] = { ...personales[donde], t, tipo, nota, c: sp.c, a: sp.a, auto: true, fecha: new Date().toISOString() };
+      accion = 'Actualizado';
+    } else {
+      personales.push({ t, tipo, nota, c: sp.c, a: sp.a, auto: true, fecha: new Date().toISOString() });
+      accion = 'Agregado';
+    }
     guardarJSON(K_PERSONAL, personales);
-    $('genNuevoTitulo').value = ''; $('genNuevaNota').value = '';
-    aviso.innerHTML = `<span class="gen-ok"><i class="bi bi-check-circle-fill"></i> Agregado con speech automático.</span> Lo verás en su tarjeta al preparar; ahí puedes ajustarlo o usar «Mejorar con Claude».`;
+    $('genNuevoTitulo').value = ''; $('genNuevaNota').value = ''; etiquetaBotonAgregar();
+    aviso.innerHTML = `<span class="gen-ok"><i class="bi bi-check-circle-fill"></i> ${accion} con speech automático.</span> Lo verás en su tarjeta al preparar; ahí puedes ajustarlo o usar «Mejorar con Claude».`;
     pintarLista(); pintarBase();
     const nuevo = document.querySelector(`#genLista input.gen-at[data-t="${CSS.escape(t)}"]`);
     if(nuevo){ nuevo.checked = true; actualizarContador(); }
@@ -1162,19 +1264,50 @@
       else if(b.dataset.plant != null) aplicarPlantilla(pintarPlantillas.todas[+b.dataset.plant]);
     });
     $('genAgregar').addEventListener('click', agregarPersonal);
+    $('genNuevoTitulo').addEventListener('input', etiquetaBotonAgregar);
 
     $('genBtnGenerar').addEventListener('click', generar);
+    // quitar la marca roja de "falta" en cuanto el usuario escribe o marca algo
+    $('genTickets').addEventListener('input', e => { if(e.target.classList) e.target.classList.remove('campo-falta'); });
+    $('genLista').addEventListener('change', () => $('genLista').classList.remove('campo-falta'));
     $('genBtnScript').addEventListener('click', descargarScript);
     $('genSiguiente').addEventListener('click', abrirSiguiente);
-    $('genBtnLimpiar').addEventListener('click', () => {
-      if(!confirm('¿Limpiar el formulario y empezar un nuevo bloque? (lo generado queda en el historial)')) return;
-      ['genPadre','genNombre','genUsuario','genSede','genPiso','genArea','genContacto','genMotivoOtro'].forEach(id => $(id).value = '');
+
+    // limpiar SOLO los campos del usuario (nombre, usuario, sede, piso, área, anexo, identificador),
+    // dejando ticket padre, motivo, tickets marcados y las pestañas ya preparadas.
+    function limpiarCamposUsuario(){
+      ['genNombre','genUsuario','genSede','genPiso','genArea','genContacto','genIdent'].forEach(id => $(id).value = '');
       $('genTrato').value = 'Usuario';
       $('genUsuarioAviso').style.display = 'none';
+      document.querySelectorAll('#genTickets .campo-falta').forEach(el => el.classList.remove('campo-falta'));
+    }
+    // Siguiente equipo/usuario: limpia los datos de la persona pero CONSERVA las pestañas ya hechas
+    $('genBtnSiguiente2').addEventListener('click', () => {
+      limpiarCamposUsuario();
+      $('genMsg').innerHTML = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      $('genNombre').focus();
+    });
+    // Limpiar todo: deja el formulario en blanco y borra las pestañas (lo preparado queda en el historial)
+    $('genBtnLimpiar').addEventListener('click', () => {
+      if(!confirm('¿Limpiar TODO y empezar de cero? (se borran el ticket padre, los tickets marcados y las pestañas; lo preparado queda en el historial)')) return;
+      limpiarCamposUsuario();
+      limpiarResultados();
+      ['genPadre','genMotivoOtro'].forEach(id => $(id).value = '');
+      $('genMotivo').value = MOTIVOS[0].id; $('genMotivo').dispatchEvent(new Event('change'));
       document.querySelectorAll('#genLista input.gen-at').forEach(c => c.checked = false);
       actualizarContador();
-      bloque = null; $('genResultados').style.display = 'none'; $('genMsg').innerHTML = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    // Limpiar correos y speeches (secciones 3 y 4): borra todas las pestañas
+    $('genBtnLimpiarResultados').addEventListener('click', () => {
+      if(lotes.length && !confirm('¿Vaciar los correos y speeches de todas las pestañas? (quedan en el historial)')) return;
+      limpiarResultados();
+    });
+    // cambiar de pestaña (equipo/usuario)
+    $('genTabs').addEventListener('click', e => {
+      const b = e.target.closest('.gen-tab'); if(!b) return;
+      loteActivo = +b.dataset.lote; bloque = lotes[loteActivo]; mostrarBloque();
     });
 
     // copiar / abrir / editar speeches (lo editado se guarda en el historial)
@@ -1221,12 +1354,13 @@
       const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.histVer){
         const h = historial.find(x => x.id === b.dataset.histVer);
-        if(h){ bloque = h; mostrarBloque(); }
+        if(h){ lotes = [h]; loteActivo = 0; bloque = h; mostrarBloque(); }
       } else if(b.dataset.histBorrar){
         if(confirm('¿Borrar este bloque del historial?')){
           marcarBorrado('h', b.dataset.histBorrar);
           historial = historial.filter(x => x.id !== b.dataset.histBorrar);
-          if(bloque && bloque.id === b.dataset.histBorrar){ bloque = null; $('genResultados').style.display = 'none'; }
+          const k = lotes.findIndex(l => l.id === b.dataset.histBorrar);
+          if(k >= 0){ lotes.splice(k, 1); if(!lotes.length){ limpiarResultados(); } else { loteActivo = Math.min(loteActivo, lotes.length - 1); bloque = lotes[loteActivo]; mostrarBloque(); } }
           guardarHistorial();
         }
       } else if(b.dataset.spBorrar){
@@ -1255,7 +1389,7 @@
     });
 
     // directorio
-    $('genDirScript').addEventListener('click', () => descargar('exportar_directorio_outlook.ps1', scriptDirectorio(), 'text/plain'));
+    $('genDirScript').addEventListener('click', () => descargar('exportar_directorio_outlook.ps1', '\uFEFF' + scriptDirectorio(), 'text/plain'));
     $('genDirImportar').addEventListener('click', () => $('genDirInput').click());
     $('genDirInput').addEventListener('change', e => { if(e.target.files[0]) importarDirectorio(e.target.files[0]); e.target.value = ''; });
 
